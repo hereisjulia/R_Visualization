@@ -1,0 +1,89 @@
+---
+title: "Energy"
+author: "julia"
+date: "2022/3/15"
+output: html_document
+---
+
+```{r}
+#資料清理
+# data <- read.csv("./Tasks/Total energy supply (TES) by source - World.csv")
+library(readr)
+data <- read_csv("./Tasks/Total energy supply (TES) by source - World.csv")
+library(tidyverse)
+
+# get variable names
+data |>
+  slice(4) -> variablenames
+
+f(x, y)
+x |> f(y)  
+library(dplyr)
+# slice(data, -c(1:4)) -> data
+data |> 
+  slice(-c(1:4)) -> data
+# rename
+names(data) <- as.character(variablenames)
+names(data)[[1]] <- "Year"
+
+# reference: https://dplyr.tidyverse.org/
+
+# apply the same operation across many columns
+# column 
+data |>
+  mutate(
+    Year=as.numeric(Year),
+    Coal=as.numeric(Coal),
+    newVariable = Year+Coal
+  ) |> View()
+
+data |>
+  mutate_all(
+    .funs = as.numeric
+  ) -> data
+
+```
+
+```{r}
+#開始畫圖囉
+ggplot(
+  data = data,
+  mapping = aes(x = Year, y=y)
+)+
+  geom_line(
+    aes(y = Coal),
+    color = "#DB7093",
+    size = 1
+  )+
+  geom_line(
+    aes(y = `Natural gas`),
+    color = "#8A2BE2",
+    size = 1
+  )+
+  geom_line(
+    aes(y = Nuclear),
+    color = "#DC143C",
+    size = 1
+  )+
+  geom_line(
+    aes(y = Hydro),
+    color = "#FFB6C1",
+    size = 1
+  )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
