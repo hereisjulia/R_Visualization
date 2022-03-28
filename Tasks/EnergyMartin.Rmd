@@ -45,18 +45,57 @@ data |>
 ```
 
 ```{r}
+ggplot()+
+  geom_line(
+    data=data,
+    mapping=aes(
+      x= Year,
+      y= Coal
+    )
+  ) +
+  geom_line(
+    data=data,
+    mapping=aes(
+      x= Year,
+      y= `Natural gas`
+    )
+  )
+```
+
+```{r}
+ggplot(
+  data=data, mapping=aes(x=Year)
+)+
+  geom_line(
+    mapping=aes(
+      y= Coal
+    )
+  ) +
+  geom_line(
+    mapping=aes(
+      y= `Natural gas`
+    )
+  )
+```
+
+```{r}
+names(data) |> stringr::str_replace_all("[,\\s]", "_") -> names(data)
+```
+
+
+```{r}
 #開始畫圖囉
 ggplot(
   data = data,
-  mapping = aes(x = Year, y=y)
+  mapping = aes(x = Year)
 )+
   geom_line(
     aes(y = Coal),
     color = "#DB7093",
-    size = 1
+    size = 1 #input$size
   )+
   geom_line(
-    aes(y = `Natural gas`),
+    aes(y = `Natural_gas`),
     color = "#8A2BE2",
     size = 1
   )+
@@ -67,8 +106,8 @@ ggplot(
   )+
   geom_line(
     aes(y = Hydro),
-    color = "#FFB6C1",
-    size = 1
+    color = "#FFB6C1", #input$color
+    size = 1  
   )
 ```
 
