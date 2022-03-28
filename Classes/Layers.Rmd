@@ -1,0 +1,171 @@
+---
+title: "0308 Layers"
+output: html_notebook
+---
+
+# Layers
+
+解析課本的圖，其中應該有用到：line\
+aes: x, y, color, size
+
+```{r}
+ggplot()+
+  geom_line(
+    x = ,
+    y = ,
+    color = ,
+    size = 
+  )
+```
+
+## Lubridate
+
+```{r}
+library(lubridate)
+date = lubridate::ymd(c("2022-02-28","2022-03-01","2022-03-02","2022-03-03"))
+```
+
+時間的資料設定好了之後來設定各國家的資料
+
+```{r}
+data = list()
+data$Britain <- 
+  data.frame(
+    date = date,
+    y = c(0, 50, 80, 100)
+  )
+data$Spain <-
+  data.frame(
+    date = date,
+    y = c(0, 32, 53, 103)
+  )
+data$Italy <-
+  data.frame(
+    date = date,
+    y = c(0, 50, 60, 99)
+  )
+```
+
+開始畫圖
+
+```{r}
+sizeInput = 1.5
+prop = 0.5
+
+ggplot(
+  mapping = aes(
+    x = date,
+    y = y
+  )
+)+
+  geom_line(
+    data = data$Britain,
+    color = "red",
+    size = sizeInput
+  )+
+  geom_line(
+    data = data$Spain,
+    color = "black",
+    size = sizeInput
+  )+
+  geom_line(
+    data = data$Italy,
+    color = "white",
+    size = sizeInput+prop
+  )+
+  geom_line(
+    data = data$Italy,
+    color = "gray",
+    size = sizeInput
+  )
+```
+
+```{r}
+class(easy_plot)
+```
+
+設定一個function簡化之，[**下面的function有出問題是因為+號的使用錯誤**]{.ul}：
+
++號的前面必須是ggplot object，但現在這樣就不行。
+
+```{r}
+geom_lineWithStroke_error <- function(data, sizeInput, prop) {
+    geom_line( 
+      data=data,
+      color="black",
+      size = sizeInput
+    ) +  
+    geom_line(
+      data=data,
+      color="#096fa1",
+      size = sizeInput*prop
+    ) 
+  }
+```
+
+所以應該如何調整？---避免用到+號
+
+可以前面只有ggplot後面用+，但連續用到的地方就用list。
+
+```{r}
+  geom_lineWithStroke <- function(data, sizeInput,prop) {
+    list(
+      geom_line(
+        data = data,
+        color = "black",
+        size = sizeInput
+      ),
+      geom_line(
+        data = data,
+        color = "#096fa1",
+        size = sizeInput * prop
+      ))
+  }
+```
+
+就可以做出簡化版了
+
+```{r}
+ggplot(
+  mapping = aes(
+    x = date,
+    y = y
+  ))+
+  geom_lineWithStroke(data$Britain,sizeInput = sizeInput,prop = prop)+
+  geom_lineWithStroke(data$Spain, sizeInput = sizeInput,prop = prop)+
+  geom_lineWithStroke(data$Italy, sizeInput = sizeInput,prop = prop)
+```
+
+# Summary
+
+```{r}
+ggplot()+geom1()+geom2()+....+geomk()
+```
+
+```{r}
+myplot <- function(data){
+  ggplot(data = data)+geom1()+geom2()+...+geomk()
+}
+myplot(data1)
+myplot(data2)
+```
+
+```{r}
+#error
+mygeom <- function(...){
+  geom1()+geom2()+...+geomk()
+}
+```
+
+```{r}
+mygeom <- function(...){
+  list(
+    geom1(),
+    geom2()
+  )
+}
+
+ggplot()+mygeom(...)
+```
+
+\

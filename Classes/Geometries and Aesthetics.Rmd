@@ -1,0 +1,170 @@
+------------------------------------------------------------------------
+
+---
+title: "R Visual class"
+output: html_notebook
+---
+
+## An Example
+
+-   x,y
+
+```{r}
+df <- data.frame(
+  v1 = c(53, 56, 58),
+  v2 = c(49, 54.9, 58),
+  country = c("Columbia", "Norway", "Germany")
+)
+
+create_point_plot <- function(df) {
+  ggplot() +
+    geom_point(
+      data = df,
+      mapping =aes(
+        x = v1,
+        y = v2
+      ),
+      shape = 21,
+      color = "black",
+      stroke = 1, # input$stroke
+      fill = "blue", # input$fill
+      size = 4 # input$size
+    )
+}
+
+create_point_plot(df)
+```
+
+-   ggplot的起手式就是要先叫出畫布> ***ggplot()+***
+
+-   有變化的美學一定要用mapping控制
+
+-   在想作為input的參數後面用#input\$xxx就可以幫助你製作出一個dashboard面板，可以用來直接調整參數。
+
+```{r}
+source("Support/exercise1.R")
+create_point_plot(df)
+```
+
+-   把一些Function在exercise1中先設定好，再source進來就行了，更簡潔。
+
+## Goem_text
+
+-   直接用+符號就可以插入新的設定
+
+-   hjust (文字水平錨點）：between 0 and 1
+
+-   vjust (文字垂直錨點）: between 0 and 1
+
+-   一樣用dash去調整位置
+
+```{r}
+ggplot()+
+    geom_point(
+        data = df,
+        mapping =aes(
+          x = v1,
+          y = v2
+        ),
+        shape = 21,
+        color = "red",
+        stroke = 1,
+        fill = "pink",
+        size = 3 #input$size
+      )+
+    geom_text(
+      data = df,
+      mapping = aes(
+        x = v1,
+        y = v2,
+        label = country,
+      ),
+      vjust = 1.8, 
+      hjust = 0.5 
+    )
+source("Support/exercise1.R")
+create_point_plot2(df)
+```
+
+## Data List
+
+老師習慣先見一個list用來存放data
+
+```{r}
+data4plot <- list()
+data4plot$point$data <- {
+  data.frame(
+    v1=c(52.5, 56, 58.5),
+    v2=c(48.6, 54.9, 58)
+  )
+}
+data4plot$text$data <- {
+  data.frame(
+    v1=c(52.5, 56, 58.5),
+    v2=c(48.6, 54.9, 58),
+    country=c("Columbia", "Norway", "Germany")
+  )
+}
+data4plot$text$data
+
+```
+
+```{r}
+source("Support/exercise1.R")
+create_point_plot2(data4plot$text$data)
+```
+
+## Graph Output
+
+```{r}
+dir.create("works")
+hw_ratio = 1/2
+ggsave(
+  filename = "works/0306prac.png",
+  plot = create_point_plot2(data4plot$text$data),
+  width = 200,
+  height = hw_ratio*200,
+  units = "mm"
+)
+```
+
+Try to 簡化吧\~
+
+```{r}
+easy_plot <- {
+  ggplot( #反覆會使用到的data直接放在這裡
+      data = data4plot$text$data,
+      mapping = aes(
+        x = v1, y = v2, label = country
+      )
+  )+
+    geom_point(
+      fill = "gray",
+      shape = 21,
+      color = "black",
+      stroke = 0.1,
+      size = 2
+    )+
+    geom_text(
+      hjust = -0.2,
+      size = 6,
+      color = "black"
+    )+
+    geom_abline(
+      slope = 0.6261804,
+      intercept = 21.9572861,
+      color = "gray",
+      linetype = 2
+    )+
+    geom_point(
+      x = c(53, 55.6, 57),
+      y = c(53, 54.9, 56),
+      shape = 21,
+      fill = "blue",
+      size = 2
+    )
+}
+easy_plot
+coef(lm(x ~ y, data = data4plot$text$data))
+
+```

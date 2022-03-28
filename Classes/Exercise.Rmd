@@ -1,0 +1,181 @@
+---
+title: "Exercise"
+output: html_notebook
+---
+
+```{r}
+time <- c(2005, 2010, 2015, 2020)
+y <- list()
+y$Britain <- c(75, 90, 73, 74)
+y$Japan <- c(100, 105, 90, 100)
+y$China <- c(105, 120, 160, 161)
+y$US <- c(60, 70, 73, 76)
+y$EmergingEconomies <- c(50, 73, 85, 90)
+```
+這邊是比較繁瑣的寫法。
+```{r}
+sizeInput = 1
+ggplot()+
+  geom_line(
+    mapping = aes(
+      x = time,
+      y = y$Britain,
+    ),
+    color = "#16982B",
+    size = sizeInput
+  )+
+  geom_line(
+    aes(
+      x = time,
+      y = y$Japan
+    ),
+    color = "#33E6CC",
+    size = sizeInput
+  )+
+  geom_line(
+    aes(
+      x = time,
+      y = y$China
+    ),
+    color = "#004D99",
+    size = sizeInput
+  )+
+  geom_line(
+    aes(
+      x = time,
+      y = y$US
+    ),
+    color = "#800080",
+    size = sizeInput
+  )
+```
+通常用年資料時我們不太會用到lubridate，但是若想要用到月或日資料。
+
+```{r}
+ggplot(
+  mapping = aes(
+    x = date,
+    y = y
+  ))+
+  geom_line(
+    data = y$Britain,
+    color = "#800080",
+    size = 1
+  )
+```
+這邊是我一直犯的錯誤，當我希望用繼承的時候，我的data設置就必須要用data.frame的格式。
+
+```{r}
+date = c(2005, 2010, 2015, 2020)
+data2 = list()
+data2$Britain <- data.frame(
+  date = date,
+  y = c(75, 90, 73, 74)
+)
+data2$Japan <- data.frame(
+  date = date,
+  y = c(100, 105, 90, 100)
+)
+data2$China <- data.frame(
+  date = date,
+  y = c(105, 120, 160, 161)
+)
+```
+```{r}
+dataSet <- data.frame(
+  time = date,
+  y_US = y$US,
+  y_China = y$China,
+  y_Britain = y$Britain,
+  y_Emerge = y$EmergingEconomies
+)
+```
+
+```{r}
+ggplot(
+  data = dataSet,
+  mapping = aes(x = time)
+)+
+  geom_line(
+    aes(y = y_US),
+    color = "blue",
+    size = 2
+  )
+```
+
+#Exercise 2
+Ribbon
+x,y
+xmin, ymin
+xmax, ymax
+alpha
+colour
+fill
+group
+linetype
+size
+```{r}
+Exercise2Data <- list()
+Exercise2Data$A <- data.frame(
+  year = c(2005, 2010, 2015),
+  ymin = c(-40, -40, -42),
+  ymax = c(-30, -30, -28)
+)
+Exercis2Data$B <- data.frame(
+  year = c(2005, 2010, 2015),
+  ymin = c(-28, -26, -27),
+  ymax = c(-26, -21, -26)
+)
+```
+
+```{r}
+fill = "#e2e9ed"
+alpha = 1
+color = "#24367D"
+
+PlotRibbon <- function(data, fill, alpha, color) {
+  list(
+    geom_ribbon(
+      data = data,
+      aes(ymin = ymin, ymax = ymax),
+      fill = fill,
+      alpha = alpha
+    ),
+    geom_line(
+      data = data,
+      aes(y = ymin),
+      color = color,
+      linetype = 2
+    ),
+    geom_line(
+      data = data,
+      aes(y = ymax),
+      color = color
+    ))
+}
+```
+
+```{r}
+ggplot(
+  data = Exercis2Data,
+  mapping = aes(x = year)
+)+
+  PlotRibbon(Exercise2Data$A, fill="#e2e9ed", alpha = 1, color = "#24367D")+
+  PlotRibbon(Exercis2Data$B, fill="#FFB3E6", alpha = 2, color = "#E6005C")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

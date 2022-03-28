@@ -1,0 +1,67 @@
+---
+title: "Energy"
+author: "julia"
+date: "2022/3/15"
+output: html_document
+---
+
+```{r}
+#資料清理
+data <- read.csv("C:/Users/User/Desktop/R/R_Visualization/Tasks/Total energy supply (TES) by source - World.csv")
+data <- data[-1:-4,]
+newNames <- c("Year","Coal", "Natural gas", "Nuclear", "Hydro", "Wind, solar", "Biofuels and waste", "Oil", "Units")
+names(data) <- newNames
+class(data$Coal)
+data$Year <- as.numeric(data$Year)
+data$Coal <- as.numeric(data$Coal)
+data$`Natural gas` <- as.numeric(data$`Natural gas`)
+data$Nuclear <- as.numeric(data$Nuclear)
+data$Hydro <- as.numeric(data$Hydro)
+data$`Wind, solar` <- as.numeric(data$`Wind, solar`)
+data$`Biofuels and waste` <- as.numeric(data$`Biofuels and waste`)
+data$Oil <- as.numeric(data$Oil)
+```
+
+```{r}
+#開始畫圖囉
+ggplot(
+  data = data,
+  mapping = aes(x = Year, y=y)
+)+
+  geom_line(
+    aes(y = Coal),
+    color = "#DB7093",
+    size = 1
+  )+
+  geom_line(
+    aes(y = `Natural gas`),
+    color = "#8A2BE2",
+    size = 1
+  )+
+  geom_line(
+    aes(y = Nuclear),
+    color = "#DC143C",
+    size = 1
+  )+
+  geom_line(
+    aes(y = Hydro),
+    color = "#FFB6C1",
+    size = 1
+  )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
