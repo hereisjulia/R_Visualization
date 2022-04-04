@@ -93,7 +93,6 @@ ggplot()+
     color = "white",
     size = 0.8
   )
-#goood
 ```
 
 

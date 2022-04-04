@@ -1,7 +1,5 @@
 # Categorical data
 
-[***總覽課程內容：***]{.ul} group使用、data的wide和long form、 factor用來排列資料在plot上的順序、 position的使用(stack)、
-
 ## Aesthetics: group
 
 ```{r}
@@ -33,7 +31,7 @@ ggplot() +
     mapping=aes(
       x=c(1, 2, 3, 1, 2, 3),
       y=c(2, 3, 2, 5, 2, 6),
-      group=c("m", "m", "m", "f", "f", "f")
+      group=c("m", "m", "m", "f", "f", "f"), 
     )
   )
 
@@ -52,7 +50,7 @@ ggplot() +
 
 ```
 
--   Any aesthetic differentiates group can replace group.若顏色跟group的分群一樣，可以省略group。
+-   Any aesthetic differentiates group can replace group.
 
 ```{r}
 ggplot() +
@@ -106,15 +104,15 @@ ggplot() +
       x=c(1, 2, 3),
       y=c(0.4, 0.3, 0.52) + c(0.2, 0.3, 0.2) # the additive is for accumulative purpose
     ), 
-    alpha=0.5 #the former layers will be invisible if alpha=1
+    alpha=0.5
   )
 ```
 
 ## Position: stack
 
--   我們常會遇到的問題可能是資料們之間會覆蓋put y on top of the overlapping geom's y
+-   put y on top of the overlapping geom's y
 
--   create accumulative result. 所以position有兩種選項："identity","stack"，後者會將每個資料往上堆疊。
+-   create accumulative result.
 
 ```{r}
 ggplot() +
@@ -167,28 +165,16 @@ When aesthetic mapping involves with unordered data, it will
 :::
 
 ```{r}
-#|>的用法：放進後面函式的()裡面
-class(data_cat1) #和後面的功能一樣
 data_cat1$fill |>
   factor() |>
-  levels() |>
-  class()
-```
-
-雖然是character，本身沒有排序，但r在判定時會給先後順序
-
-```{r}
-data_cat1$fill |>
-  factor() -> fill_asFactor #先把他轉成factor看其順序
-fill_asFactor
-levels(fill_asFactor) #levels可以顯示，但不會告訴你順序
+  levels()
 ```
 
 ## Factor
 
 When grouping aesthetics vary the look of geometries across different groups of data, it is crucial that users declare the mapped series with proper class.
 
--   `factor(data_series, levels)` parses `data_series` into a categorical data with expressing sequence defined by `levels`. 順序可以透過factor去改變。
+-   `factor(data_series, levels)` parses `data_series` into a categorical data with expressing sequence defined by `levels`.
 
 -   If omit `levels` the level sequence will be determined by the collateral sequence defined by your operating system.
 
@@ -200,15 +186,14 @@ ggplot(
     mapping=aes(
       x=x,
       y=y,
-      group = factor(fill, levels = c("m", "f")),
-      fill=factor(fill, levels=c("m", "f"))
-    ) #fill是顏色的順序先後有調整而已，若想要調整資料上下的順序還是要靠group
+      fill=factor(fill, levels=c("m", "f")) #改變順序
+    )
   )
 ```
 
 -   Here we declare factor on-the-go.
 
-We can also declare factor in the data frame first也可以在data裡就先處理好:
+We can also declare factor in the data frame first:
 
 ```{r}
 data_cat1_copy <- data_cat1
@@ -233,31 +218,21 @@ ggplot(
       x=x,
       y=y,
       fill=fill
-    ),
-    #position="stack"
+    )
   )
-```
 
-###以後只要data中有要分類，有字串的話，都依定要用factor，這樣順序才不會到不同電腦中都亂跑。
+```
 
 ## Proportional data
 
 ```{r}
 data_cat2_wide <- data.frame(
-      x=c(1, 2, 3), #不同年齡層
-      y_a=c(0.2, 0.3, 0.2), 
+      x=c(1, 2, 3),
+      y_a=c(0.2, 0.3, 0.2),
       y_b=c(0.4, 0.4, 0.52),
-      y_c=c(0.4, 0.3, 0.28) #不同身體健康狀態
+      y_c=c(0.4, 0.3, 0.28)
 )
 
-data.frame(
-  x=c(1,2,3,1,2,3,1,2,3),
-  values_to =c(0.2, 0.3, 0.2, 0.4, 0.4, 0.52, 0.4, 0.3, 0.28),
-  fill = c("y_a","y_a","y_a","y_b","y_b","y_b","y_c","y_c","y_c")
-)
-
-#如果要用到美學mapping要group的話，data frame一定要是用long form
-#通常像要wide在計算不同類別加總時比較好計算；而long的話就是在跑計量或統計時比較好寫，因為較不繁瑣。
 data_cat2_wide |> 
   tidyr::pivot_longer(
     cols=y_a:y_c,
@@ -277,16 +252,15 @@ ggplot(
     mapping=aes(
       x=x,
       y=y,
-      group=factor(fill, levels=c("y_c","y_a","y_b")),
       fill=fill
     ),
-    color="white" #邊線顏色
+    color="white"
   )
 ```
 
 ------------------------------------------------------------------------
 
-When x mapping series has limited cases and is discrete, a bar chart with position dodge is better. #dodge要左右散開不重疊，都從0開始畫
+When x mapping series has limited cases and is discrete, a bar chart with position dodge is better.
 
 ```{r}
 ggplot(
@@ -296,14 +270,13 @@ ggplot(
     mapping=aes(
       x=x,
       y=y,
-      group = factor(fill, levels = c("y_a", "y_b", "y_c")),
-      fill= factor(fill, levels=c("y_a", "y_b", "y_c")
+      fill=fill
     ),
     color="white",
     width=0.8, #input$width
-    size=1, #input$size
+    size=0, #input$size
     position = "dodge" #input$position
-  ) 
+  )
 ```
 
 -   `width`: the width of the bar
@@ -318,6 +291,7 @@ Pie chart:
 
 ```{r}
 library(dplyr)
+View(data_cat2)
 data_cat2 %>%
   filter(
     x==1
@@ -333,8 +307,9 @@ ggplot(
     aes(
       x=x,
       y=y,
-      fill=fill
-    )
+      fill= fill
+      ),
+    position="dodge"
   )
 ```
 
@@ -402,9 +377,10 @@ ggplot(
       x=x,
       y=y,
       label=fill,
-      group=fill
+      group=fill #前一張疊的順序不對，可以透過group弄對。
     ),
-    position = "stack"
+    size = 4,
+    position = position_stack(vjust = 0.5)#input$vjust
   )
 ```
 :::
@@ -479,10 +455,10 @@ ggplot(
     ),
     position = position_stack(vjust=0.5)
   ) +
-  coord_polar(
+  coord_polar( #變成角度為主的
     theta = "y"
   ) +
-  theme_void()
+  theme_void() #可以把除了圖片外不要的東西拿掉
 ```
 
 ------------------------------------------------------------------------
@@ -508,7 +484,7 @@ ggplot(
     mapping=aes(
       x=x,
       y=y-dy,
-      group=fill,
+      group=fill, #group跟前面的fill相同的話，就可以承繼popsition的效果~
       label=y
     ),
     size=8, #input$size
@@ -519,6 +495,14 @@ ggplot(
 ```
 
 -   text position_dodge has the same width as `geom_col` to ensure the same dodging distance.
+
+```{r}
+#改變label
+data_cat2_x1only$label <- 
+  paste0(data_cat2_x1only$fill, "(", data_cat2_x1only$y, ")")
+#用paste0拼接
+View(data_cat2_x1only)
+```
 
 ## More on position
 
@@ -551,6 +535,24 @@ teachDS::img_centering("img/us-presidential-election.jpg", width="100%")
 ```
 
 ```{r}
+dx=5 #input$dx
+h=0.5 #input$h
+dt=0 #input$dt
+ggplot()+
+  geom_col(
+    mapping=aes(
+      x=c(1, 1),
+      y=c(306, 232),
+      fill=c("biden","trump")
+    ),
+    width=1
+  )+
+  xlim(1-dx,1+dx)+
+  coord_flip()+
+  theme_void()
+```
+
+```{r}
 dx=4 #input$dx
 h=0.5 #input$h
 dt=0 #input$dt
@@ -579,7 +581,7 @@ ggplot()+
     ),
     size=8 #input$text
   )+
-  xlim(1-dx, 1+dx)+ # make sure cover 0.5-1.5 so the bar width can be accomodate
+  xlim(1-dx, 1+dx)+ # make sure cover 0.5-1.5 so the bar width can be accomodate #不要太胖！
   coord_flip()+
   theme_void()+
   theme(legend.position = "none")
@@ -605,39 +607,6 @@ ggplot()+
 teachDS::img_centering("https://images.squarespace-cdn.com/content/v1/55b6a6dce4b089e11621d3ed/1586289284165-6Z2M2XKD645EJRCV3TPV/Area+chart+example.png?format=1500w")
 ```
 
-```{r}
-set.seed(2020)
-type1 <- function(){
-  dnorm(1990:2010, mean=1991, sd=3)*2500 -> x
-    round(x, digits = 0)
-}
-type2 <- function(){
-  dnorm(1994:2010, mean=1998, sd=2)*1000->x
-  round(x, digits=0)
-}
-type3 <- function(){
-  dnorm(2002:2010, mean=2005, sd=2.3)*800->x
-  round(x, digits=0)
-}
-
-data_set4 <- data.frame(
-  year=c(
-    1990:2010,
-    1994:2010,
-    2002:2010),
-  storage_type=
-    c(
-      rep("type1", 21),
-      rep("type2", 17),
-      rep("type3", 9)),
-  sales_amount=c(
-    type1(), 
-    type2(),
-    type3()
-  )
-)
-```
-
 ### 2 {.unnumbered}
 
 ```{r, echo=F, eval=T}
@@ -654,4 +623,39 @@ teachDS::img_centering("https://www.economist.com/img/b/1000/2753/90/sites/defau
 
 ```{r, echo=F, eval=T}
 teachDS::img_centering("http://uc.udn.com.tw/photo/2020/01/12/1/7324036.png")
+```
+
+```{r}
+exercise4_data <- data.frame(
+  x = c(1, 1, 1),
+  vote = c(38, 5, 57),
+  fill = c("韓","其他","蔡")
+)
+```
+
+```{r}
+dx = 5
+ggplot(
+        data = exercise4_data
+)+
+  geom_col(
+    mapping = aes(
+      x = x,
+      y = vote,
+      fill = fill,
+      group = c("c", "b", "a")
+    )
+  )+
+  geom_text(
+    mapping = aes(
+      x = c(1,1,1),
+      y = c(5,36,54),
+      label = c("38%","5%", "57%")
+    ),
+    position = "stack",
+    size = 5
+  )+
+  coord_flip()+
+  xlim(1+dx, 1-dx)+
+  theme_void()
 ```
