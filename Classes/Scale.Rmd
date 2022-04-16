@@ -93,6 +93,7 @@ breaks = c(
   2018)
 labels = c(
   "1979", "85", "90", "95", "2000", "05", "10", "15", "18")
+
 ggplot0$plot2+
   scale_x_continuous(
     breaks = breaks,
@@ -134,6 +135,133 @@ ggplot0$plot3+
   )+
   coord_cartesian(clip = "off")
 ```
+###- 打包練習1
+下面這邊把剛剛寫過的那塊打包起來~之後可以再用
+然後extract function了~
+```{r}
+mt_axis_custom <- function(breaks, labels, ticksmajor, ticksminor, majorLength, minor_majorRatio) {
+  
+  list(
+      scale_x_continuous(
+        breaks=breaks,
+        labels=labels
+      ),
+      theme(
+        axis.ticks.length.x = unit(0,"mm"),
+        axis.text.x = element_text(
+          margin = margin(
+            12 #input$margin
+          ),
+          size=16 #input$textSize
+          )
+        ),
+      geom_rug(
+        mapping=aes(
+          x=ticksmajor
+          ),
+        outside=TRUE, # draw rug outside the plot panel
+        size=0.5, #input$majorsize
+        length=grid::unit(
+          majorLength, 
+          "mm"
+        )
+      ),
+      geom_rug(
+        mapping=aes(
+          x=ticksminor
+        ),
+        outside = TRUE,
+        size=0.5, #input$minorsize
+        length=grid::unit(
+          minor_majorRatio*majorLength,
+          "mm"
+        )
+      ),
+      coord_cartesian(clip="off")
+  )
+
+}
+```
+
+```{r}
+library(ggplot2)
+ggplot()+
+  geom_step(
+    data = dataSet1,
+    mapping = aes(
+      x = x,
+      y = y
+    )
+  )+
+  mt_axis_custom(
+    breaks = c(1979,seq(1985, 2015, by =5),2018),
+    labels = c("1979", "85", "90", "95", "2000", "05", "10", "15", "18"),
+    ticksmajor = seq(1980, 2015, by=5),
+    majorLength=3,
+    ticksminor = seq(1979,2018),
+    minor_majorRatio=0.5
+  )
+```
+###- 打包練習2
+```{r}
+candidate_vote_outcome <- function(candidate_vote) {
+  dx = 5
+  h=0.5
+  dt= 0.8
+  ggplot()+
+    geom_col(
+      mapping = aes(
+        x=c(1,1),
+        y=candidate_vote,
+        fill=c("a","b")
+      ),
+      width = 1
+    )+
+    geom_segment(
+      mapping=aes(
+        x=1-h,
+        y=sum(candidate_vote)/2,
+        xend=1+h,
+        yend=sum(candidate_vote)/2
+      )
+    )+
+    geom_text(
+      mapping = aes(
+        x=1+dt,
+        y=sum(candidate_vote)/2,
+        label=sum(candidate_vote)/2
+      ),
+      size=6
+    )+
+    xlim(1-dx, 1+dx)+
+    coord_flip()+
+    theme_void()+
+    theme(legend.position = "none")
+}
+```
+這樣我們就可以快速比對兩位投票票數狀況+標出中位數!
+那摸，來試用吧~
+```{r}
+candidate_vote=c(280, 720)
+candidate_vote_outcome(candidate_vote)
+```
+
+### 打包注意!
+code > insert roxygen skeleton
+用來建立運算符號的介紹!
+在每個@param後面去介紹每個參數
+
+#summary
+/影片DV week9 (II)內容統整:
+
+1. Programming block {...}
+
+2. How to pack a chunk of code?
+
+3. How to formulate a chunk of codes as a function?
+
+4. How to write a function usage explanation (using Roxygen Skeleton)
+
 
 
 
