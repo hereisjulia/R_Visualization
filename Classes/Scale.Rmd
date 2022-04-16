@@ -1,0 +1,139 @@
+---
+title: "Scale"
+author: "julia"
+date: "2022/4/7"
+output: html_document
+---
+
+#5 Scale
+在美學對應中要透過scale來微調,一般而言可以把mapping分成兩種:
+  1. limits: 只map出指定的資料，不符合就不會出來
+  2. values: 每個value要印到哪個limits中
+簡單來說就是用limits決定要畫哪些，values則是如何去對應每個limits
+
+##5.1 Legend 圖例
+
+讀者看到的圖例要有的要素就是:
+name: 圖例的title
+breaks: 要顯示的圖例有哪些
+labels: break決定要顯示的圖例要叫什麼?
+
+```{r}
+data_cat1 <- data.frame(
+      x=c(1, 2, 3, 1, 2, 3),
+      y=c(0.2, 0.3, 0.2, 0.4, 0.4, 0.52),
+      fill=c("m", "m", "m", "f", "f", "f")
+)
+ggplot0 <- list()
+0 #input$null
+ggplot0$plot1 <- 
+  ggplot(
+    data=data_cat1
+  ) + 
+    geom_area(
+      mapping=aes(
+        x=x,
+        y=y,
+        fill=factor(fill, levels=c("m", "f"))
+      )
+    )
+ggplot0$plot1
+```
+看上圖右側圖例，
+
+```{r}
+ggplot0$plot1 +
+  scale_fill_discrete(
+    name= "Gender",
+    breaks= c("m","f"),
+    labels= c("Male", "Female")
+  )
+```
+##5.2 Time Axis 時間軸
+經濟學人的資料圖，資料時間樣本區間必定會放在圖上，不會另外寫出來
+
+每個圖上的字都必定是label，背後就有break
+
+```{r}
+dataSet1 <- 
+  data.frame(
+    x=1979:2018
+  )
+set.seed(2038)
+dataSet1$y <- sample(10:40, length(dataSet1$x), T)
+
+```
+
+```{r}
+ggplot()+
+  geom_step( #階梯圖
+    data = dataSet1,
+    mapping = aes(
+      x = x,
+      y = y
+    )
+  ) -> ggplot0$plot2
+ggplot0$plot2
+```
+階梯圖及line圖看狀況使用
+>現在可以看出來他的時間標籤自動是1980-2010，每十年列出，該如何調整?
+
+class(dataSet1$x)
+class(dataSet1$y)
+x = integer
+y = discrete
+scale_x_discrete
+scale_x_continuous
+
+Fine tune x scale
+```{r}
+breaks = c(
+  1979,
+  seq(1985, 2015, by =5),
+  2018)
+labels = c(
+  "1979", "85", "90", "95", "2000", "05", "10", "15", "18")
+ggplot0$plot2+
+  scale_x_continuous(
+    breaks = breaks,
+    labels = labels
+  ) -> ggplot0$plot3
+ggplot0$plot3
+```
+```{r}
+#取消刻度線
+ggplot0$plot3+
+  theme(
+    axis.ticks.length.x =unit(0, "mm")
+  )
+```
+接下來介紹一下geom_rug
+```{r}
+p <- ggplot(data = dataSet1, aes(x, y))+ geom_point()
+p #先劃一個基本的離散圖
+p+geom_rug() #加上rug就會像地毯一樣幫它對應
+```
+```{r}
+bigYears <- seq(1980, 2015, by=5)
+smallYears <- seq(1979, 2018)
+ggplot0$plot3+
+  geom_rug(
+    aes(x = bigYears),
+    outside = T,
+    length = unit(
+      1, #input$bigT
+      "mm")
+  )+
+  geom_rug(
+    aes(x = smallYears),
+    outside = T,
+    length = unit(
+      0.6,#input$smallT
+      "mm"
+    )
+  )+
+  coord_cartesian(clip = "off")
+```
+
+
+

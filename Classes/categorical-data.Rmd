@@ -619,6 +619,45 @@ teachDS::img_centering("https://www.economist.com/img/b/1000/1339/90/sites/defau
 teachDS::img_centering("https://www.economist.com/img/b/1000/2753/90/sites/default/files/20211023_WWC082.png")
 ```
 
+```{R}
+DataExercise3_3 <- data.frame(
+  group = c("low income", "lowwer-middle", "upper-middle", "high income"),
+  y = c(5, 54, 127, 134)
+)
+DataExercise3_3$group <- factor(
+  DataExercise3_3$group,
+  levels = c("low income", "lowwer-middle", "upper-middle", "high income")
+)
+levels(DataExercise3_3$group)
+```
+
+```{r}
+dx = 0.3#input$dx
+dy = 0#input$dy
+ggplot(
+  data = DataExercise3_3
+)+
+  geom_col(
+    mapping = aes(
+      x = rev(group),
+      y = y,
+      fill = "pink"
+    ),
+    width = 0.3#input$width
+  )+
+  geom_text(
+    mapping = aes(
+      x = c(4,3,2,1)+dx,#用數字對應characters的項目(取代原本直接用group項)，比較好對位置
+      y = 0+ dy,
+      label = group
+    ),
+    size = 5,
+    hjust =0
+  )+
+  coord_flip()+
+  theme_void()
+```
+
 ### 4 {.unnumbered}
 
 ```{r, echo=F, eval=T}
