@@ -1,0 +1,48 @@
+---
+title: "GHGemissions"
+author: "julia"
+date: "2022/4/22"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(tidyverse)
+GHGemissions <- read_csv("C:/Users/User/Desktop/R/R_Visualization/Tasks/world GHG emissions/ghg-emissions_countries.csv")
+```
+#資料介紹
+這是世界各國溫室氣體(1990-2018)的排放量
+我希望可以呈現各國排放的年度變化量以及占比：
+>因此先行考量使用geom_area
+
+在資料處理的部分，希望可以將資料分成：
+美國、中國、歐洲、印度、其他
+
+
+```{r}
+Year <- seq(1990:2018)
+ggplot(data = GHGemissions)+
+  geom_point(
+    mapping = aes(
+      x=Year
+      y=1990,
+      fill = "black"
+    ))
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

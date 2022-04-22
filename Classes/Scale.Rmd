@@ -135,6 +135,60 @@ ggplot0$plot3+
   )+
   coord_cartesian(clip = "off")
 ```
+###Advance Function
+```{r}
+axis_x_continuouse_custom <- function(
+  breaks, labels,
+  ticks_major, ticks_minor,
+  ticks_major_length = 3, 
+  minor_major_tickLength_ratio = 0.7,
+  text_size = 16,
+  text_top_margin = 12,
+  major_tick_size = 0.5,
+  minor_tick_size = 0.5
+){
+  list(
+    scale_x_continuous(
+      breaks=breaks,
+      labels=labels
+    ), 
+    theme(
+      axis.ticks.length.x = unit(0,"mm"),
+      axis.text.x = element_text(
+        margin = margin(
+          text_top_margin #input$margin
+        ),
+        size=text_size #input$textSize
+        )
+      ), 
+    geom_rug(
+      mapping=aes(
+        x=ticks_major
+        ),
+      outside=TRUE, # draw rug outside the plot panel
+      size=major_tick_size, #input$majorsize
+      length=grid::unit(
+        ticks_major_length, 
+        "mm"
+      )
+    ), 
+    geom_rug(
+      mapping=aes(
+        x=ticks_minor
+      ),
+      outside = TRUE,
+      size=minor_tick_size,
+      length=grid::unit(
+        minor_major_tickLength_ratio*ticks_major_length,
+        "mm"
+      )
+    ), 
+    coord_cartesian(clip="off")
+    )
+}
+```
+
+
 ###- 打包練習1
 下面這邊把剛剛寫過的那塊打包起來~之後可以再用
 然後extract function了~
@@ -246,10 +300,15 @@ candidate_vote=c(280, 720)
 candidate_vote_outcome(candidate_vote)
 ```
 
-### 打包注意!
+### - 打包注意!
 code > insert roxygen skeleton
 用來建立運算符號的介紹!
 在每個@param後面去介紹每個參數
+
+### - 補充: 調整圖大小
+老師寫的調大小的檔案
+econDV2::resize_image(path="")
+
 
 #summary
 /影片DV week9 (II)內容統整:
