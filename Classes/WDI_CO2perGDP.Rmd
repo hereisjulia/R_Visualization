@@ -1,0 +1,158 @@
+---
+title: "CO2perGDP"
+author: "julia"
+date: "2022/4/23"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(tidyverse)
+library(googledrive)
+library(ggplot2)
+```
+#Exercise1_WDI
+- 對應影片DV_week13
+- 今天第一個exercise是：World Bank的資料庫(World Development Indicators, WDI)
+```{r}
+CO2perGDP <- list()
+CO2perGDP <- read_csv("C:/Users/User/Desktop/R/R_Visualization/Tasks/CO2_perGDP/CO2perGDP_Data.csv")
+```
+
+#Source
+先把資料來源的網址、檔案記下來
+```{r}
+CO2perGDP$source[[1]] <- "https://databank.worldbank.org/source/world-development-indicators#"
+{
+  localfile = "C:/Users/User/Desktop/R/R_Visualization/Tasks/CO2_perGDP/CO2perGDP_Data.csv"
+  drivepath = "https://drive.google.com/drive/u/0/folders/1v3SbnZjHQHu5LZAGu3ByfengvE6bqHFG"
+  
+#直接轉成google sheet
+  googledrive::drive_upload(
+    media = localfile,
+    path = googledrive::as_dribble(drivepath),
+    type = "spreadsheet"
+  ) -> .info
+  
+  .info$drive_resource[[1]]$webViewLink
+}
+```
+
+#WDI
+```{R}
+library(WDI)
+.df <- list()
+WDI::WDI(
+  indicator="EN.ATM.CO2E.PP.GD"
+) -> .df$CO2perGDP
+WDI::WDI(
+  indicator="NY.GDP.MKTP.KD.ZG"
+) -> .df$GDPgrowth
+
+.df$CO2perGDP |> View()
+.df$GDPgrowth |> View()
+```
+
+```{r}
+library(dplyr)
+#透過向左整併，將兩個資料merge起來，by後面提及的3個項目要相同才會整併。
+CO2perGDP$data$wdi <- 
+{
+  .df$CO2perGDP|>
+    left_join(.df$GDPgrowth,
+              by=c("iso2c","country","year"))
+}
+View(CO2perGDP$data$wdi)
+```
+
+
+```{r}
+ggplot(
+  data=CO2perGDP$data$wdi,
+  mapping = aes(
+    x=year
+  )
+)+
+  geom_line(
+    mapping = aes(
+      y=EN.ATM.CO2E.PP.GD,
+      group=country)
+  )
+names(CO2perGDP$data$wdi)
+```
+
+
+#Exercise2_Taiwan Data
+
+- 第二個exercise則是：中華民國統計資料庫
+
+
+```{r}
+econDV2::Object(taiwan)
+taiwan$source[[1]] <- "https://nstatdb.dgbas.gov.tw/dgbasall/webMain.aspx?k=dgmain"
+taiwan$source[[2]] <- ""
+
+taiwan$data$origin <-
+{
+  googlesheets4::read_sheet(
+    taiwan$source[[2]],
+    range = "A3:C73"
+  )
+} 
+```
+
+```{r}
+{
+  localfile = "C:/Users/User/Desktop/R/R_Visualization/Classes/ClassData/TaiwanDataTest.csv"
+  drivepath = "https://drive.google.com/drive/u/0/folders/1v3SbnZjHQHu5LZAGu3ByfengvE6bqHFG"
+  googledrive::drive_upload(
+    media= localfile,
+    path = googledrive::as_dribble(drivepath),
+    type = "spreadsheet"
+  ) -> .info
+  .info$drive_resourse[[1]]
+}
+
+###這邊不知道為何都不行用
+```
+
+```{r}
+read_csv("./Classes/ClassData/TaiwanDataTest.csv")
+```
+
+
+##World
+
+```{r}
+econDV2::Object(world)
+
+{
+  taiwan$data$origin |> names()
+  names(taiwan$data$origin) <- c("year", "population", "gdp_usd")
+  CO2perGDP$data$wdi |> names()
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

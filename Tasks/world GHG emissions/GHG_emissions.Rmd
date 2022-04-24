@@ -19,17 +19,32 @@ GHGemissions <- read_csv("C:/Users/User/Desktop/R/R_Visualization/Tasks/world GH
 美國、中國、歐洲、印度、其他
 
 
+- 先把原本的wide form變成long form!
 ```{r}
-Year <- seq(1990:2018)
-ggplot(data = GHGemissions)+
-  geom_point(
-    mapping = aes(
-      x=Year
-      y=1990,
-      fill = "black"
-    ))
-
+pivot_longer(
+  GHGemissions,
+  cols = -c(1,2),
+  names_to = "year",
+  values_to = "Emissions"
+) -> GHGemissions_long
 ```
+
+- 把名字改好看!
+```{r}
+GHGemissions_long |> names() -> oldnames
+oldnames[1] <- "country"
+oldnames
+names(GHGemissions_long) <- oldnames
+GHGemissions_long |> names()
+```
+- 一樣是改名字，但是第二種方式
+```{r}
+names(GHGemissions_long)[1] <- "Country"
+GHGemissions_long |> names()
+```
+
+
+
 
 
 

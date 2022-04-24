@@ -9,7 +9,7 @@ output: html_document
 #資料清理
 # data <- read.csv("./Tasks/Total energy supply (TES) by source - World.csv")
 library(readr)
-data <- read_csv("./Tasks/Total energy supply (TES) by source - World.csv")
+data <- read_csv("C:/Users/User/Desktop/R/R_Visualization/Tasks/Total energy supply (TES) by source - World.csv")
 library(tidyverse)
 
 # get variable names
@@ -41,7 +41,6 @@ data |>
   mutate_all(
     .funs = as.numeric
   ) -> data
-
 ```
 
 ```{r}
