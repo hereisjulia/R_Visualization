@@ -121,7 +121,7 @@ Exercise2Data$A <- data.frame(
   ymin = c(-40, -40, -42),
   ymax = c(-30, -30, -28)
 )
-Exercis2Data$B <- data.frame(
+Exercise2Data$B <- data.frame(
   year = c(2005, 2010, 2015),
   ymin = c(-28, -26, -27),
   ymax = c(-26, -21, -26)
@@ -157,11 +157,11 @@ PlotRibbon <- function(data, fill, alpha, color) {
 
 ```{r}
 ggplot(
-  data = Exercis2Data,
+  data = Exercise2Data,
   mapping = aes(x = year)
 )+
-  PlotRibbon(Exercise2Data$A, fill="#e2e9ed", alpha = 1, color = "#24367D")+
-  PlotRibbon(Exercis2Data$B, fill="#FFB3E6", alpha = 2, color = "#E6005C")
+  PlotRibbon(data=Exercise2Data$A, fill="#e2e9ed", alpha = 1, color = "#24367D")+
+  PlotRibbon(data=Exercise2Data$B, fill="#FFB3E6", alpha = 2, color = "#E6005C")
 ```
 
 

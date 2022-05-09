@@ -1,0 +1,40 @@
+---
+title: "EU_GHGemissions"
+author: "julia"
+date: "2022/5/5"
+output: html_document
+---
+```{r}
+library(readr)
+library(tidyverse)
+library(dplyr)
+EU_GHG <- list()
+EU_GHG$data <- read_csv("C:/Users/User/Desktop/R/R_Visualization/Tasks/EU GHG/EU GHG emissions.csv")
+names(EU_GHG$data) <- c("Unit (kt or %)", "year", "Sectors", "Emissions", "Gas", "Name" )
+names(EU_GHG$data)
+EU_GHG$transport |> View()
+
+EU_GHG$transport <- {
+  filter(EU_GHG$data, Sectors=="Domestic transport")
+}
+```
+
+這邊嘗試使用geom+line不成功，思考後發現應該是因為
+這邊的資料並不是連續資料~
+```{r}
+library(ggplot2)
+ggplot(
+  data=EU_GHG$transport
+)+
+  geom_point(
+      mapping = aes(
+    x=year,
+    y=Emissions/1000,
+  ),
+  color="black",
+  size=1
+  )
+```
+
+
+

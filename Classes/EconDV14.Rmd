@@ -1,0 +1,116 @@
+---
+title: "EconDV14"
+author: "julia"
+date: "2022/5/1"
+output: html_document
+---
+
+#5.3.2 Secondary axis 雙座標
+`econDV14(2)`
+先畫主要的圖，在畫右邊的軸，告訴r要怎堆到左邊的軸，最後用rescale對到右軸的圖。
+
+```{r}
+eu=readRDS("ClassData/eu.Rds")
+
+ggplot4 <- econDV2::Object(ggplot4)
+ggplot4$data = eu$data2 |> dplyr::filter(
+      time >= "2011-01-01"
+    )
+ggplot4$summary$industrialProductionChange$range <- {
+  ggplot4$data$ind_procution_change |> range(na.rm = T)
+}
+ggplot4$summary$unemploymentRate$range <- {
+  ggplot4$data$unemploymentRate |> range(na.rm=T)
+}
+
+ggplot4$scatter_path <- function(plotly=F, timeEnd="2014-06-01"){
+  ggplot(
+    data=ggplot4$data |> subset(
+  time <= timeEnd),
+    mapping=aes(
+        x=ind_procution_change,
+        y=unemploymentRate,
+      label=time
+      )
+    )+
+  geom_point()+geom_path() -> gg
+  if(plotly){plotly::ggplotly(gg)} else {gg}
+}
+
+ggplot4$scatter_path(T, timeEnd = "2021-12-31")
+```
+
+```{r}
+ggplot4$ggplot <- function(){
+  ggplot(
+    data= ggplot4$data |>
+      subset(time <= "2014-06-01"),
+    mapping=aes(x=time)
+  )
+}
+ggplot4$industrialProduction <- function(){
+  geom_col(
+    mapping=aes(
+      y=ind_procution_change
+    ),
+    fill="#04a2d0"
+  )
+}
+ggplot4$unemployment <- function(){
+  geom_line(
+    aes(
+      y=unemploymentRate
+    ),
+    color="#77230f"
+  )
+}
+ggplot4$scale_y_ind_production <- function(...){
+  scale_y_continuous(
+    name="Industrial production",
+    limits = c(-10, 11),
+    breaks = seq(-10, 10, by=5),
+    labels = seq(-10, 10, by=5),
+    ...
+  )
+}
+ggplot4$scale_y_unemployment <- function(...){
+  scale_y_continuous(
+    name="Unemployment",
+    limits = c(3, 13),
+    breaks = seq(4,12, by=2),
+    ...
+  )
+}
+
+ggplot4$just$industrialProduction <- function(){
+  ggplot4$ggplot()+
+    ggplot4$industrialProduction()+
+    ggplot4$scale_y_ind_production()
+}
+ggplot4$just$unemployment <- function(){
+  ggplot4$ggplot()+
+    ggplot4$unemployment()+
+    ggplot4$scale_y_unemployment()
+}
+
+ggplot4$twoSeries <- function(...){
+  ggplot4$ggplot()+
+    ggplot4$industrialProduction()+
+    ggplot4$unemployment()+
+    ggplot4$scale_y_ind_production(...)
+}
+ggplot4$twoSeries()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -88,11 +88,14 @@ names(CO2perGDP$data$wdi)
 
 
 ```{r}
+taiwan$data$origin <- read_csv("C:/Users/User/Desktop/R/R_Visualization/Classes/ClassData/TaiwanDataTest.csv")
+```
+```{r}
 econDV2::Object(taiwan)
 taiwan$source[[1]] <- "https://nstatdb.dgbas.gov.tw/dgbasall/webMain.aspx?k=dgmain"
 taiwan$source[[2]] <- ""
 
-taiwan$data$origin <-
+#taiwan$data$origin <-
 {
   googlesheets4::read_sheet(
     taiwan$source[[2]],
@@ -113,11 +116,10 @@ taiwan$data$origin <-
   .info$drive_resourse[[1]]
 }
 
-###這邊不知道為何都不行用
+###我這邊不知道為何都不行用
 ```
 
 ```{r}
-read_csv("./Classes/ClassData/TaiwanDataTest.csv")
 ```
 
 
@@ -134,17 +136,29 @@ econDV2::Object(world)
 ```
 
 
+#整併兩資料
+
+這邊是dv week13(II)的內容
+
+```{r}
+CO2perGDP$data$world <- {
+  dplyr::bind_rows(
+    CO2perGDP$data$wdi |> 
+      select(year, country, gdp_usd, population),
+    taiwan$data$origin
+  )
+}
+CO2perGDP$source[[2]] <- "data/Taiwan.Rds"
+CO2perGDP$save()
+```
 
 
+##GDP vs GDP per capita
 
-
-
-
-
-
-
-
-
+```{r}
+CO2perGDP$data$world |> View()
+.df<- CO2perGDP$data$world
+```
 
 
 

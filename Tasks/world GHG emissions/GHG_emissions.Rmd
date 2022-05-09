@@ -8,7 +8,9 @@ output: html_document
 ```{r}
 library(readr)
 library(tidyverse)
-GHGemissions <- read_csv("C:/Users/User/Desktop/R/R_Visualization/Tasks/world GHG emissions/ghg-emissions_countries.csv")
+GHGemissions <- read_csv("C:/Users/User/Desktop/R/R_Visualization/Tasks/world GHG emissions/ghg-emissions_countries.csv",col_types = cols(`1990` = col_double()))
+#想問一下這邊是什麼？
+GHGemissions |> View()
 ```
 #資料介紹
 這是世界各國溫室氣體(1990-2018)的排放量
@@ -18,7 +20,8 @@ GHGemissions <- read_csv("C:/Users/User/Desktop/R/R_Visualization/Tasks/world GH
 在資料處理的部分，希望可以將資料分成：
 美國、中國、歐洲、印度、其他
 
-
+#資料處理開始
+##Pivot Longer
 - 先把原本的wide form變成long form!
 ```{r}
 pivot_longer(
@@ -28,7 +31,8 @@ pivot_longer(
   values_to = "Emissions"
 ) -> GHGemissions_long
 ```
-
+##Names()
+###改名1
 - 把名字改好看!
 ```{r}
 GHGemissions_long |> names() -> oldnames
@@ -37,14 +41,59 @@ oldnames
 names(GHGemissions_long) <- oldnames
 GHGemissions_long |> names()
 ```
+###改名2
 - 一樣是改名字，但是第二種方式
 ```{r}
 names(GHGemissions_long)[1] <- "Country"
 GHGemissions_long |> names()
+GHGemissions_long |> View()
 ```
 
+##Summarise()
+這個函數可以計算摘要統計輛，將數據框摺疊成一行。
+常常會和 group_by() 一起使用，因為這樣可以將分析單位從整个數據集更改為單個分组。在分组後的數據框上使用dplyr函數時，它們會自動應用到每個分组。更簡單地說，你想從哪個層级上分析问問題，就在group_by中對什麼層级進行分组。
+```{r}
+class(GHGemissions_long$Emissions)
+summarise(GHGemissions_long, mean(Emissions))
+GHGcount <- list()
+GHGemissions_long |> group_by(Country) |> summarise(Emission_Cty=mean(Emissions)) -> GHGcount$CTYmean
+GHGcount$CTYmean |>View()
+##...我不知道這是跑出了啥...應該是先分類國家之後計算出28年平均？阿反正這不是我要的，但先留著。
+```
+好像不太對，因為我要的是依據不同國家分類，所以這邊應該是要創造一欄重新定義國家的組別，
+我要分的是美國、中國、其他。
+```{r}
+for(Country in GHGemissions_long){if(GHGemissions_long$Country=="United States"){print("USA")}else if(GHGemissions_long$Country=="China"){print("China")}else{print("Other")}}
+#好像失敗了？
+```
+ok前面失敗了幾次哈哈，剛剛重讀一下r基本。
+我這邊改成用`子集subset`和`filter`函數，另外創造在list下的三個data，分出了`USA`, `China`, `Other`三種資料
+```{r}
+GHGcount$USA <- subset(GHGemissions_long, Country=="United States")
+GHGcount$China <- subset(GHGemissions_long, Country=="China")
+GHGemissions_long |> filter(Country!="United States", Country!="China") -> GHGcount$Other
+GHGcount$USA |> view()
+```
 
-
+```{r}
+class(GHGcount$USA$Emissions)
+names(GHGcount$USA)
+ggplot(
+  data = GHGemissions_long,
+  mapping = aes(x=year)
+)+
+  geom_area(
+      data=GHGcount$USA,
+      mapping = aes(
+        y=GHGcount$USA$Emissions))+
+  geom_area(
+    data=GHGcount$China,
+    mapping = aes(
+      y=GHGcount$China$Emissions
+    )
+  )
+#why都顯示不出來啊QQ
+```
 
 
 
