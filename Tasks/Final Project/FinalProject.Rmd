@@ -18,13 +18,13 @@ finalProj <- list()
 finalProj$BureauEnergy$source <- "https://www.moeaboe.gov.tw/ECW/populace/content/SubMenu.aspx?menu_id=3010"
 
 #台灣進口能源國家比例
-finalProj$BureauEnergy$data$Imp_EnergySource <- read_excel("C:/Users/User/Desktop/R/R_Visualization/Tasks/Final Project/ImportEnergySource.xlsx", skip = 1)
+finalProj$BureauEnergy$data$Imp_EnergySource <- read_excel("./Tasks/Final Project/ImportEnergySource.xlsx", skip = 1)
 
 #台灣對進口能源依賴比率
-finalProj$BureauEnergy$data$Imp_EnergyRelience <- read_excel("C:/Users/User/Desktop/R/R_Visualization/Tasks/Final Project/ImportEnergyRelience.xlsx",skip=1)
+finalProj$BureauEnergy$data$Imp_EnergyRelience <- read_excel("./Tasks/Final Project/ImportEnergyRelience.xlsx",skip=1)
 
 #台灣能源總消費量
-finalProj$BureauEnergy$data$Dom_Energy_Consumption <- read_excel("C:/Users/User/Desktop/R/R_Visualization/Tasks/Final Project/DomesticEnergyConsumption.xlsx", skip = 1)
+finalProj$BureauEnergy$data$Dom_Energy_Consumption <- read_excel("./Tasks/Final Project/DomesticEnergyConsumption.xlsx", skip = 1)
 
 View(finalProj$BureauEnergy$data$Imp_EnergyRelience)
 ```
