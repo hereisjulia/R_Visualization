@@ -18,15 +18,15 @@ finalProj <- list()
 finalProj$BureauEnergy$source <- "https://www.moeaboe.gov.tw/ECW/populace/content/SubMenu.aspx?menu_id=3010"
 
 #台灣進口能源國家比例
-finalProj$BureauEnergy$data$Imp_EnergySource <- read_excel("./Tasks/Final Project/ImportEnergySource.xlsx")
+finalProj$BureauEnergy$data$Imp_EnergySource <- read_excel("C:/Users/User/Desktop/R/R_Visualization/Tasks/Final Project/ImportEnergySource.xlsx", skip = 1)
 
 #台灣對進口能源依賴比率
-finalProj$BureauEnergy$data$Imp_EnergyRelience <- read_excel("./Tasks/Final Project/ImportEnergyRelience.xlsx")
+finalProj$BureauEnergy$data$Imp_EnergyRelience <- read_excel("C:/Users/User/Desktop/R/R_Visualization/Tasks/Final Project/ImportEnergyRelience.xlsx",skip=1)
 
 #台灣能源總消費量
-finalProj$BureauEnergy$data$Dom_Energy_Consumption <- read_excel("Tasks/Final Project/DomesticEnergyConsumption.xlsx", skip = 1)
+finalProj$BureauEnergy$data$Dom_Energy_Consumption <- read_excel("C:/Users/User/Desktop/R/R_Visualization/Tasks/Final Project/DomesticEnergyConsumption.xlsx", skip = 1)
 
-View(finalProj$BureauEnergy$data$Dom_Energy_Consumption)
+View(finalProj$BureauEnergy$data$Imp_EnergyRelience)
 ```
 
 #圖一
@@ -35,6 +35,7 @@ View(finalProj$BureauEnergy$data$Dom_Energy_Consumption)
 /aes 設計：呈現總能源量>凸顯對進口能源依賴>顯示進口能源類別
 ---用area+線圖呈現
 
+##台灣能源總量
 但現在我們的資料形式是wide form, 先把它改成long.
 ```{r}
 pivot_longer(
@@ -47,20 +48,51 @@ pivot_longer(
 finalProj$BureauEnergy$data$Dom_Energy_Consumption$years|> str_replace_all("年", "-") -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$years
 finalProj$BureauEnergy$data$Dom_Energy_Consumption$years|> str_replace_all("月", "") -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$years
 View(finalProj$BureauEnergy$data$Dom_Energy_Consumption)
-finalProj$BureauEnergy$data$Dom_Energy_Consumption$years|> as.Date()
+finalProj$BureauEnergy$data$Dom_Energy_Consumption$years|> as.Date(format="%Y,$d")
+```
+##進口量
+```{r}
+pivot_longer(
+  finalProj$BureauEnergy$data$Imp_EnergySource,
+  cols = -c(1:2),
+  names_to = "month",
+  values_to = "能源當量"
+) -> finalProj$BureauEnergy$data$Imp_EnergySource
 ```
 
+##進口能源依賴
+```{r}
+pivot_longer(
+  finalProj$BureauEnergy$data$Imp_EnergyRelience,
+  cols = -c(1),
+  names_to = "month",
+  values_to = "relience(%)"
+) -> finalProj$BureauEnergy$data$Imp_EnergyRelience
+```
 
 ```{r}
 ggplot()+
   geom_area(
     data = finalProj$BureauEnergy$data$Dom_Energy_Consumption,
     mapping = aes(
-      x="month",
+      x=,
       y="Energy_Consump"
     )
+  )+
+  geom_area(
+    data = finalProj$BureauEnergy$data$Imp_EnergySource, #這邊應該還要再處理一下，資料太雜(用能源分類)
+    mapping = aes(
+      x=,
+      y="能源當量"
+    )
   )
-
+  geom_line(
+    data = finalProj$BureauEnergy$data$Imp_EnergyRelience,
+    mapping = aes(
+      x= seq(1:39),
+      y="relience(%)"
+    )
+  )
 ```
 
 

@@ -19,6 +19,6 @@ gg <- list(
   aes = econDV2::ggaes
 )
 
-#這邊是要用google map時要用的金鑰，不可以隨意洩露出去。
+
 library(ggmap)
 ggmap::register_google(key="AIzaSyDEzCEHE_82xW8TMBbhbOQVvJsPmSwN4Jo")
