@@ -17,14 +17,23 @@ library(stringr)
 finalProj <- list()
 finalProj$BureauEnergy$source <- "https://www.moeaboe.gov.tw/ECW/populace/content/SubMenu.aspx?menu_id=3010"
 
+#台灣能源總消費量
+url <- "https://github.com/hereisjulia/R_Visualization/blob/main/Tasks/Final%20Project/DomesticEnergyConsumption.xlsx?raw=true"
+destfile <- "DomesticEnergyConsumption.xlsx"
+curl::curl_download(url, destfile)
+finalProj$BureauEnergy$data$Dom_Energy_Consumption <- read_excel(destfile, skip = 1)
+
 #台灣進口能源國家比例
-finalProj$BureauEnergy$data$Imp_EnergySource <- read_excel("./Tasks/Final Project/ImportEnergySource.xlsx", skip = 1)
+url <- "https://github.com/hereisjulia/R_Visualization/blob/main/Tasks/Final%20Project/ImportEnergySource.xlsx?raw=true"
+destfile <- "ImportEnergySource.xlsx"
+curl::curl_download(url, destfile)
+finalProj$BureauEnergy$data$Imp_EnergySource <- read_excel(destfile, skip = 1)
 
 #台灣對進口能源依賴比率
-finalProj$BureauEnergy$data$Imp_EnergyRelience <- read_excel("./Tasks/Final Project/ImportEnergyRelience.xlsx",skip=1)
-
-#台灣能源總消費量
-finalProj$BureauEnergy$data$Dom_Energy_Consumption <- read_excel("./Tasks/Final Project/DomesticEnergyConsumption.xlsx", skip = 1)
+url <- "https://github.com/hereisjulia/R_Visualization/blob/main/Tasks/Final%20Project/ImportEnergyRelience.xlsx?raw=true"
+destfile <- "ImportEnergyRelience.xlsx"
+curl::curl_download(url, destfile)
+finalProj$BureauEnergy$data$Imp_EnergyRelience <- read_excel(destfile, skip = 1)
 
 View(finalProj$BureauEnergy$data$Imp_EnergyRelience)
 ```
@@ -45,10 +54,9 @@ pivot_longer(
   values_to = "Energy_Consump"
 ) -> finalProj$BureauEnergy$data$Dom_Energy_Consumption
 
-finalProj$BureauEnergy$data$Dom_Energy_Consumption$years|> str_replace_all("年", "-") -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$years
-finalProj$BureauEnergy$data$Dom_Energy_Consumption$years|> str_replace_all("月", "") -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$years
-View(finalProj$BureauEnergy$data$Dom_Energy_Consumption)
-finalProj$BureauEnergy$data$Dom_Energy_Consumption$years|> as.Date(format="%Y,$d")
+paste(finalProj$BureauEnergy$data$Dom_Energy_Consumption$month, "-01") -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$month
+lubridate::ymd(finalProj$BureauEnergy$data$Dom_Energy_Consumption$month) -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$month
+
 ```
 ##進口量
 ```{r}
@@ -65,32 +73,36 @@ pivot_longer(
 pivot_longer(
   finalProj$BureauEnergy$data$Imp_EnergyRelience,
   cols = -c(1),
-  names_to = "month",
-  values_to = "relience(%)"
+  names_to = month,
+  values_to = relience(%)
 ) -> finalProj$BureauEnergy$data$Imp_EnergyRelience
 ```
 
 ```{r}
+finalProj$BureauEnergy$data$Dom_Energy_Consumption$month|>class()
+finalProj$BureauEnergy$data$Dom_Energy_Consumption$Energy_Consump|>class()
+
+
 ggplot()+
   geom_area(
     data = finalProj$BureauEnergy$data$Dom_Energy_Consumption,
     mapping = aes(
-      x=,
-      y="Energy_Consump"
+      x=month,
+      y=Energy_Consump
     )
-  )+
+  )#+
   geom_area(
     data = finalProj$BureauEnergy$data$Imp_EnergySource, #這邊應該還要再處理一下，資料太雜(用能源分類)
     mapping = aes(
       x=,
-      y="能源當量"
+      y=能源當量
     )
   )
   geom_line(
     data = finalProj$BureauEnergy$data$Imp_EnergyRelience,
     mapping = aes(
       x= seq(1:39),
-      y="relience(%)"
+      y= `relience(%)`
     )
   )
 ```
