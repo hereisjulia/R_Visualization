@@ -8,12 +8,15 @@ output: html_document
 library(readr)
 library(tidyverse)
 library(dplyr)
+library(stringr)
 EU_GHG <- list()
-EU_GHG$data <- read_csv("C:/Users/User/Desktop/R/R_Visualization/Tasks/EU GHG/EU GHG emissions.csv")
+EU_GHG$source <- 
+EU_GHG$data <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/EU%20GHG/EU%20GHG%20emissions.csv")
 names(EU_GHG$data) <- c("Unit (kt or %)", "year", "Sectors", "Emissions", "Gas", "Name" )
 names(EU_GHG$data)
-EU_GHG$transport |> View()
-
+EU_GHG$data$year <- str_replace_all(EU_GHG$data$year,"年","")
+EU_GHG$data$year <- as.numeric(EU_GHG$data$year)
+EU_GHG$data |> View()
 EU_GHG$transport <- {
   filter(EU_GHG$data, Sectors=="Domestic transport")
 }
@@ -26,7 +29,7 @@ library(ggplot2)
 ggplot(
   data=EU_GHG$transport
 )+
-  geom_point(
+  geom_line(
       mapping = aes(
     x=year,
     y=Emissions/1000,

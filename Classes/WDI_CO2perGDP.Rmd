@@ -16,18 +16,24 @@ library(ggplot2)
 - 今天第一個exercise是：World Bank的資料庫(World Development Indicators, WDI)
 ```{r}
 CO2perGDP <- list()
-CO2perGDP <- read_csv("C:/Users/User/Desktop/R/R_Visualization/Tasks/CO2_perGDP/CO2perGDP_Data.csv")
+CO2perGDP$dataframe <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/CO2_perGDP/CO2perGDP_Data.csv")
+#老師教了一個東西:可以用github裡面資料raw的網址
+CO2perGDP |> View()
 ```
 
 #Source
-先把資料來源的網址、檔案記下來
+先把資料來源的網址、檔案記下來，
+我可能就會想要開一個清單，列出我想要留下的資料。
+包含資料來源等等的就叫做metadata，
+其實只是一個簡單的應用，把一個在執行的project要用到的全部都放進來。
 ```{r}
 CO2perGDP$source[[1]] <- "https://databank.worldbank.org/source/world-development-indicators#"
 {
   localfile = "C:/Users/User/Desktop/R/R_Visualization/Tasks/CO2_perGDP/CO2perGDP_Data.csv"
   drivepath = "https://drive.google.com/drive/u/0/folders/1v3SbnZjHQHu5LZAGu3ByfengvE6bqHFG"
   
-#直接轉成google sheet
+#把localFile在google上用googleSheet的方式打開
+  googledrive::drive_auth()
   googledrive::drive_upload(
     media = localfile,
     path = googledrive::as_dribble(drivepath),

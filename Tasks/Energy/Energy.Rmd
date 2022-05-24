@@ -1,0 +1,105 @@
+---
+title: "Energy"
+author: "julia"
+date: "2022/3/15"
+output: html_document
+---
+
+```{r}
+#資料清理
+library(readr)
+EnergyData <- read_csv("Total energy supply (TES) by source - World.csv", 
+    skip = 4)
+#read.csv是util套件的 #read_csv則是後進者所以用不一樣的
+#用相對路徑概念
+#也可以用下面的import data text (readr)用
+library(tidyverse)
+#建議資料清理多用tidyverse, 內有dplyr
+##reference: https://dplyr.tidyverse.org/ 
+###從article開始看
+
+#先把variable name拿出來
+EnergyData |>
+  slice(4) -> variableName
+#將名字重新命名
+names(EnergyData) <- as.character(variableName)
+names(EnergyData)[[1]] <- "Year" #第一列沒名字之後會麻煩
+
+#刪掉前面不要的列數 ##但後來發現其實直接import選單解決就可
+slice(data, -c(1:4))
+data |>
+  slice(-c(1:4)) -> data
+
+#apply the same operation across many columns
+#Column operation
+data |>
+  mutate(
+    Year = as.numeric(Year),
+    Coal = as.numeric(Coal),
+    #NewVariable = Year+Coal  #mutate可以創造新的欄位
+  ) |> View()
+#也可以這樣用
+data |>
+  mutate_all(
+    .funs = as.numeric
+  ) -> data
+
+
+data <- data[-1:-4,]
+newNames <- c("Year","Coal", "Natural gas", "Nuclear", "Hydro", "Wind, solar", "Biofuels and waste", "Oil", "Units")
+names(data) <- newNames #名字要是字串
+class(data$Coal)
+data$Year <- as.numeric(data$Year)
+data$Coal <- as.numeric(data$Coal)
+data$`Natural gas` <- as.numeric(data$`Natural gas`)
+data$Nuclear <- as.numeric(data$Nuclear)
+data$Hydro <- as.numeric(data$Hydro)
+data$`Wind, solar` <- as.numeric(data$`Wind, solar`)
+data$`Biofuels and waste` <- as.numeric(data$`Biofuels and waste`)
+data$Oil <- as.numeric(data$Oil)
+```
+
+```{r}
+#開始畫圖囉
+ggplot(
+  data = data,
+  mapping = aes(x = Year, y=y)
+)+
+  geom_line(
+    aes(y = Coal),
+    #color = "#DB7093",
+    size = 1 #input$size
+  )
+#+
+  geom_line(
+    aes(y = `Natural gas`),
+    color = "#8A2BE2",
+    size = 1
+  )+
+  geom_line(
+    aes(y = Nuclear),
+    color = "#DC143C",
+    size = 1
+  )+
+  geom_line(
+    aes(y = Hydro),
+    color = "#FFB6C1",
+    size = 1
+  )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

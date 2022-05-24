@@ -1,0 +1,348 @@
+---
+title: "EconDV15"
+author: "julia"
+date: "2022/5/14"
+output: html_document
+---
+
+#Map
+老師會在econDV2::Map裏面多放一些地圖要用到的步驟
+```{r}
+mp <- econDV2::Map()
+```
+
+先來介紹一下會用到的三個地圖系統
+```{r}
+mp$browse$google() #這其實就是會跳出google map而已
+mp$browse$stamen() #這個網站會提供一些經過加工處理的地圖版型 先輸入地點之後就會有不同種類可以使用
+mp$browse$openstreetmap() #這就是一個開源的地圖，可以自己搞東西上去不被google收錢
+```
+通常在資料視覺化中使用到地圖多是作為背景使用，較常使用簡單statement後再疊圖上去。
+
+#Geographic Geom
+
+#Point, Line and Polygon點線面
+```{r}
+fourPoints <- data.frame(
+    x=c(2, 3, 5, 3),
+    y=c(-1, 0, 6, 6)
+)
+geometry <- list()
+geometry$ggplot <- function(){
+  ggplot(
+    data=fourPoints,
+    mapping=aes(
+      x=x, y=y
+    )
+  )
+}
+#geometry$ggplot()   -Function Call
+```
+   *To make `{...}`portable, make it into a function.
+
+##Points:
+```{r}
+geometry$points <- geometry$ggplot() + geom_point()
+geometry$points <- {
+  ggplot(
+    data=fourPoints,
+    mapping=aes(
+      x=x, y=y
+    )
+  )
+}+geom_point()
+geometry$point
+```
+##Path:
+```{r}
+fourPoints|> View()
+geometry$path <- geometry$ggplot() + geom_path()
+geometry$path
+geometry$path
+```
+
+##Polygon
+```{r}
+geometry$polygon <- geometry$ggplot() + geom_polygon()
+geometry$polygon
+```
+
+```{r}
+data.frame(
+  country = c("Taipei", "Taichung"),
+  population = ....,
+  geometry = ?
+)
+```
+
+###Multipolygons
+A school consists of many buildings
+```{r}
+bigArea <- data.frame(
+  order = 1:7,
+  x= c(1, 5.5, 5.5, 1, 7, 8, 9),#builing1(前四) #building2(後三)
+  y= c(-2, -2, 7, 7, 8, 8, 2),
+  building= c(rep("building1",4), rep("building2",3)), #same school
+  contour = c(rep("outer", 4), rep("outer", 3)) #two different buildings
+)
+bigArea|>View()
+```
+
+```{r}
+ggplot(data=bigArea) +
+  geom_polygon(
+    mapping=aes(x=x, y=y, group=building)
+  )
+```
+來嘗試在building1中加入一個庭院，就是在其中加入一區是空的(用outer和courtyard區分)
+```{r}
+fourPoints$building="building1"
+fourPoints$contour="courtyard"
+fourPoints$order=8:11
+bigArea |> names()
+bigAreaWithHoles <-
+  dplyr::bind_rows(
+    bigArea,
+    fourPoints
+  ) |> arrange(building, order)
+
+View(bigAreaWithHoles)
+
+ggplot(
+  data=bigAreaWithHoles
+) + 
+  geom_polygon(
+    aes(
+      x=x, y=y, 
+      group=building, 
+      subgroup=contour
+    )
+  )
+```
+
+##Application to world map
+ggplot2裡面其實有內建一些地圖:美國、世界、義大利等等...
+```{r}
+world = ggplot2::map_data("world")
+```
+```{r}
+world |>
+  dplyr::filter(
+    region=="Taiwan"
+  ) -> Taiwan
+Taiwan |> View()
+
+ggplot()+
+  geom_polygon(
+    data=Taiwan,
+    mapping=aes(
+      x=long, y=lat,
+      group=group,
+      fill=group
+    )
+  )+
+  coord_map()+
+  theme_void()
+```
+
+
+一般而言會把另外一個資料整併到map_data中
+```{r}
+econData <- data.frame(
+  group=c("1433","1434"), #金門&台灣的編號
+  pop = c(50,300)
+)
+
+Taiwan |> 
+  dplyr::left_join(
+    econData,
+    by= "group"
+  ) -> Taiwan
+```
+
+```{r}
+ggplot()+
+  geom_polygon(
+    data=world,
+    mapping=aes(
+      x=long, y=lat,
+      group=group
+    ),
+    fill="white", color="black"
+  )+
+  coord_map()+
+  theme_void()
+```
+
+```{r}
+ggplot(
+  data= econData,
+  aes(
+    map_id=group
+  )
+)+
+  geom_map(
+    aes(
+      map_id=
+    )
+  )
+
+```
+地理資訊系統中最主要有兩種：
+QGIS
+ArcGIS
+
+***
+
+#Simple Feature
+```{r}
+install.packages("sf")
+```
+   *<https://r-spatial.github.io/sf/> 的簡介
+
+What is `Simple Feature`?
+Another type of geographic data structure
+這個data會是一種新的class，每個value會呈現出一種形式的geometry()
+
+所以要透過parsing function產生value
+`sf::st_xxx` function where `xxx`can be 
+`point`(北大一個地標),
+`multipoint`(北大所有地標),
+`linestring`(北大一條路徑),
+`polygon`(北大一棟建築),
+`multilinestring`(北大所有路徑),
+`multipolygon`(北大所有建築),
+`geometrycollection`(整個北大)
+
+```{r}
+geoValues <- list()
+geoValues$simple_feature$point <- #這就只是一個點
+  sf::st_point(
+    c(24.9433123, 121.3699526)
+  )
+geoValues$simple_feature$multipoint <-
+  sf::st_multipoint(
+    rbind( #will form a matrix
+      c(24.9443019, 121.3714944), #1st point
+      c(24.9440709, 121.3728518) #2nd point
+    )
+  )
+geoValues$simple_feature$multipoint|>ggplot()+geom_sf()
+
+geoValues$simple_feature$linestring <- 
+  sf::st_linestring(
+    rbind(
+      c(24.9423755, 121.3679438), #1st trace point
+      c(24.9429941, 121.3679432), #2nd trace point
+      c(24.9432087, 121.3686713) #3rd trace point
+    )
+  )
+
+geoValues$simple_feature$polygon <-
+  sf::st_polygon(
+    list(
+      #1st closed trace
+      rbind(
+        c(24.9441895, 121.3695181),
+        c(24.9442244, 121.3692544),
+        c(24.9437158, 121.3694094),
+        c(24.9438647, 121.3696271),
+        c(24.9441895, 121.3695181) #close the polygon(跟第一個一樣)
+      )
+    )
+  )
+geoValues$simple_feature$polygon |> ggplot()+geom_sf()
+```
+
+```{r}
+class(geoValues$simple_feature$point)
+class(geoValues$simple_feature$multipoint)
+class(geoValues$simple_feature$polygon)
+geoValues$simple_feature |> View()
+```
+其實剛剛建構出的就長下面這樣：
+```{r}
+list(
+  sf::st_point(...),
+  sf::st_linestring(...),
+  sf::st_polygon(...)
+) #這些都只是值，用list包起來而已
+```
+但想要形成一個data frame 的column的話就要：
+```{r}
+sf::st_sfc(geoValues$simple_feature) ->
+  geoValues$simple_feature_column
+    geoValues$simple_feature_column|>View()
+```
+```{r}
+class(geoValues$simple_feature_column)
+```
+這樣就可以把整個一口氣畫出來~
+```{r}
+geoValues$simple_feature_column|>ggplot()+geom_sf()
+```
+```{r}
+#initiate a data frame
+df_sf <- data.frame(
+  name=c("landmark1", "must-see landmarks", "path 1", "building 1")
+)
+View(df_sf)
+
+#add simple feature column
+df_sf|>sf::st_set_geometry(geoValues$simple_feature_column)->
+  df2
+View(df2)
+```
+
+若用前面的方式就要一個個點線面弄才行，
+但若用這個方式，就只要定義好value，然後collect成一個column之後，再attach到你的data frame就行了~!!!
+```{r}
+df2 |> ggplot()+geom_sf()
+```
+
+##SF概念
+`info |> geom_sf()` #only if class(info) is `sf` (simple feature)
+  所以前面在用成list之後要再用`sf::st_sfc()`變成帶sf性質的column.
+
+
+#Import Simple Feature
+老師給的電子書內容沒有，舊電子書網址才有：https://tpemartin.github.io/economic-data-visualization/zh-tw/annotation-and-maps.html
+
+這裡有個免費的台灣直轄縣市地圖檔案：https://data.gov.tw/dataset/7442
+
+```{r}
+library(readr)
+library(sf)
+dsf_taiwan <- sf::read_sf("C:/Users/User/Desktop/R/R_Visualization/Classes/ClassData/COUNTY_MOI_1090820.shp")
+```
+
+```{r}
+class(dsf_taiwan)
+head(dsf_taiwan)
+```
+/它裡面通常會提供一些地圖相關的資料
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: 119.9089 ymin: 23.43541 xmax: 124.5611 ymax: 26.38528 (#畫圖經緯度的範圍)
+Geodetic CRS:  TWD97(#座標體系)
+
+
+然而，我們多會對地圖進行簡化
+```{r}
+#這裡會需要一個套件rmapshaper
+dsf_taiwan |>
+  rmapshaper::ms_simplify() -> dsf_taiwan_simplify
+```
+
+google map cloud: https://console.cloud.google.com/google/maps-apis/build?project=carbon-aquifer-350207
+如果只是要用ggmap的話就只需要gmap static api
+
+```{r}
+library(ggmap)
+#ggmap::register_google(key="")
+#金鑰不可隨意洩露，放.Rprof
+```
+
+
+
+

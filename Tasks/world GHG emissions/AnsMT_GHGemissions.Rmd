@@ -15,6 +15,7 @@ output: html_document
 library(readr)
 library(tidyverse)
 GHGemissions <-  read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/85557bc192912f146f17befda9ec756a094b70d8/Tasks/world%20GHG%20emissions/ghg-emissions_countries.csv",col_types = cols(`1990` = col_double()))
+view(GHGemissions)
 ```
 #資料介紹
 這是世界各國溫室氣體(1990-2018)的排放量

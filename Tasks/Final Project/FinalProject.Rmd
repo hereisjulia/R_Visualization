@@ -1,0 +1,75 @@
+---
+title: "Final Project"
+author: "julia"
+date: "2022/5/24"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(lubridate)
+library(ggplot2)
+library(stringr)
+```
+
+```{r}
+finalProj <- list()
+finalProj$BureauEnergy$source <- "https://www.moeaboe.gov.tw/ECW/populace/content/SubMenu.aspx?menu_id=3010"
+
+#台灣進口能源國家比例
+finalProj$BureauEnergy$data$Imp_EnergySource <- read_excel("./Tasks/Final Project/ImportEnergySource.xlsx")
+
+#台灣對進口能源依賴比率
+finalProj$BureauEnergy$data$Imp_EnergyRelience <- read_excel("./Tasks/Final Project/ImportEnergyRelience.xlsx")
+
+#台灣能源總消費量
+finalProj$BureauEnergy$data$Dom_Energy_Consumption <- read_excel("Tasks/Final Project/DomesticEnergyConsumption.xlsx", skip = 1)
+
+View(finalProj$BureauEnergy$data$Dom_Energy_Consumption)
+```
+
+#圖一
+/內容包含：台灣能源總量+進口量+依賴進口量
+/data格式：2019年1月到2022年3月的月資料
+/aes 設計：呈現總能源量>凸顯對進口能源依賴>顯示進口能源類別
+---用area+線圖呈現
+
+但現在我們的資料形式是wide form, 先把它改成long.
+```{r}
+pivot_longer(
+  finalProj$BureauEnergy$data$Dom_Energy_Consumption,
+  cols = -c(1),
+  names_to = "month",
+  values_to = "Energy_Consump"
+) -> finalProj$BureauEnergy$data$Dom_Energy_Consumption
+
+finalProj$BureauEnergy$data$Dom_Energy_Consumption$years|> str_replace_all("年", "-") -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$years
+finalProj$BureauEnergy$data$Dom_Energy_Consumption$years|> str_replace_all("月", "") -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$years
+View(finalProj$BureauEnergy$data$Dom_Energy_Consumption)
+finalProj$BureauEnergy$data$Dom_Energy_Consumption$years|> as.Date()
+```
+
+
+```{r}
+ggplot()+
+  geom_area(
+    data = finalProj$BureauEnergy$data$Dom_Energy_Consumption,
+    mapping = aes(
+      x="month",
+      y="Energy_Consump"
+    )
+  )
+
+```
+
+
+
+
+
+
+
+
+
+
+
