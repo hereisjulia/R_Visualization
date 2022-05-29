@@ -14,20 +14,25 @@ library(stringr)
 ```
 
 ```{r}
+#引入資料~
+##用INSERT EXCEL導進GITHUB的DATA，這樣老師比較方便~
+
 finalProj <- list()
 finalProj$BureauEnergy$source <- "https://www.moeaboe.gov.tw/ECW/populace/content/SubMenu.aspx?menu_id=3010"
 
 #台灣能源總消費量
+##單位：公秉油當量kloe, kiloliter of oil equivalent
 url <- "https://github.com/hereisjulia/R_Visualization/blob/main/Tasks/Final%20Project/DomesticEnergyConsumption.xlsx?raw=true"
 destfile <- "DomesticEnergyConsumption.xlsx"
 curl::curl_download(url, destfile)
 finalProj$BureauEnergy$data$Dom_Energy_Consumption <- read_excel(destfile, skip = 1)
 
-#台灣進口能源國家比例
-url <- "https://github.com/hereisjulia/R_Visualization/blob/main/Tasks/Final%20Project/ImportEnergySource.xlsx?raw=true"
-destfile <- "ImportEnergySource.xlsx"
+#台灣進口能源比例
+##單位：公秉油當量
+url <- "https://github.com/hereisjulia/R_Visualization/blob/main/Tasks/Final%20Project/ImpEnergySource.xlsx?raw=true"
+destfile <- "ImpEnergySource.xlsx"
 curl::curl_download(url, destfile)
-finalProj$BureauEnergy$data$Imp_EnergySource <- read_excel(destfile, skip = 1)
+finalProj$BureauEnergy$data$Imp_EnergySource<- read_excel(destfile, skip = 1)
 
 #台灣對進口能源依賴比率
 url <- "https://github.com/hereisjulia/R_Visualization/blob/main/Tasks/Final%20Project/ImportEnergyRelience.xlsx?raw=true"
@@ -44,65 +49,119 @@ View(finalProj$BureauEnergy$data$Imp_EnergyRelience)
 /aes 設計：呈現總能源量>凸顯對進口能源依賴>顯示進口能源類別
 ---用area+線圖呈現
 
-##台灣能源總量
+## DataTidying
+
+### Data1: 台灣能源總量
 但現在我們的資料形式是wide form, 先把它改成long.
 ```{r}
 pivot_longer(
   finalProj$BureauEnergy$data$Dom_Energy_Consumption,
   cols = -c(1),
   names_to = "month",
-  values_to = "Energy_Consump"
+  values_to = "Consump_kloe"
 ) -> finalProj$BureauEnergy$data$Dom_Energy_Consumption
+```
 
+現在一個問題是等等要畫圖時的x軸，我想要用時間的格式，所以要把資料改成時間。so, 這邊做法：
+/因為date最小單位必須要是日期，所以要把日期加一下
+/接下來就可以直接用lubridate轉資料類別了~
+
+```{r}
 paste(finalProj$BureauEnergy$data$Dom_Energy_Consumption$month, "-01") -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$month
 lubridate::ymd(finalProj$BureauEnergy$data$Dom_Energy_Consumption$month) -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$month
-
 ```
-##進口量
+
+### Data2: 進口量
 ```{r}
 pivot_longer(
   finalProj$BureauEnergy$data$Imp_EnergySource,
-  cols = -c(1:2),
+  cols = -c(1),
   names_to = "month",
-  values_to = "能源當量"
+  values_to = "Import_kloe"
 ) -> finalProj$BureauEnergy$data$Imp_EnergySource
 ```
+```{r}
+#轉date
+paste(finalProj$BureauEnergy$data$Imp_EnergySource$month, "-01") -> finalProj$BureauEnergy$data$Imp_EnergySource$month
+lubridate::ymd(finalProj$BureauEnergy$data$Imp_EnergySource$month) -> finalProj$BureauEnergy$data$Imp_EnergySource$month
+```
 
-##進口能源依賴
+```{r}
+names(finalProj$BureauEnergy$data$Imp_EnergySource)[[1]] <- "EnergySource"
+View(finalProj$BureauEnergy$data$Imp_EnergySource)
+```
+
+
+### Data3: 進口能源依賴
 ```{r}
 pivot_longer(
   finalProj$BureauEnergy$data$Imp_EnergyRelience,
   cols = -c(1),
-  names_to = month,
-  values_to = relience(%)
+  names_to = "month",
+  values_to = "relience"
 ) -> finalProj$BureauEnergy$data$Imp_EnergyRelience
+```
+```{r}
+#轉date
+paste(finalProj$BureauEnergy$data$Imp_EnergyRelience$month, "-01") -> finalProj$BureauEnergy$data$Imp_EnergyRelience$month
+lubridate::ymd(finalProj$BureauEnergy$data$Imp_EnergyRelience$month) -> finalProj$BureauEnergy$data$Imp_EnergyRelience$month
+```
+
+
+##ggplot start
+總之現在就開始畫圖~從area兩張+一張線圖開始！
+
+### geom_area: Data1
+
+```{r}
+#先確定一下資料格式正確：month是date，consump是numeric
+finalProj$BureauEnergy$data$Dom_Energy_Consumption$month|>class()
+finalProj$BureauEnergy$data$Dom_Energy_Consumption$Energy_Consump|>class()
 ```
 
 ```{r}
-finalProj$BureauEnergy$data$Dom_Energy_Consumption$month|>class()
-finalProj$BureauEnergy$data$Dom_Energy_Consumption$Energy_Consump|>class()
-
-
 ggplot()+
   geom_area(
     data = finalProj$BureauEnergy$data$Dom_Energy_Consumption,
     mapping = aes(
       x=month,
-      y=Energy_Consump
-    )
-  )#+
-  geom_area(
-    data = finalProj$BureauEnergy$data$Imp_EnergySource, #這邊應該還要再處理一下，資料太雜(用能源分類)
-    mapping = aes(
-      x=,
-      y=能源當量
+      y=Consump_kloe
     )
   )
+```
+
+### geom_area: Data2
+
+```{r}
+#先確定一下資料格式正確：month是date，Import_kloe量是numeric
+finalProj$BureauEnergy$data$Imp_EnergySource$month|>class()
+finalProj$BureauEnergy$data$Imp_EnergySource$Import_kloe|>class()
+```
+
+```{r}
+##but現在問題是之前上過的！顏色對錯了....
+ggplot()+
+  geom_area(
+    data = finalProj$BureauEnergy$data$Imp_EnergySource,
+    mapping = aes(
+      x=month,
+      y=Import_kloe,
+      group = EnergySource,
+      fill = EnergySource,
+      alpha = 0.5
+    ),
+      position= "dodge"
+  )
+```
+
+### geom_line: Data3
+```{r}
+ggplot()+
   geom_line(
     data = finalProj$BureauEnergy$data$Imp_EnergyRelience,
     mapping = aes(
-      x= seq(1:39),
-      y= `relience(%)`
+      x= month,
+      y= relience
     )
   )
 ```
