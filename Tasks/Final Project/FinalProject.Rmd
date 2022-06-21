@@ -35,8 +35,8 @@ curl::curl_download(url, destfile)
 finalProj$BureauEnergy$data$Imp_EnergySource<- read_excel(destfile, skip = 1)
 
 #台灣對進口能源依賴比率
-url <- "https://github.com/hereisjulia/R_Visualization/blob/main/Tasks/Final%20Project/ImportEnergyRelience.xlsx?raw=true"
-destfile <- "ImportEnergyRelience.xlsx"
+url <- "https://github.com/hereisjulia/R_Visualization/blob/main/Tasks/Final%20Project/Import_Reliance.xlsx?raw=true"
+destfile <- "Import_Reliance.xlsx"
 curl::curl_download(url, destfile)
 finalProj$BureauEnergy$data$Imp_EnergyRelience <- read_excel(destfile, skip = 1)
 
@@ -110,24 +110,23 @@ lubridate::ymd(finalProj$BureauEnergy$data$Imp_EnergyRelience$month) -> finalPro
 
 ##ggplot start
 總之現在就開始畫圖~從area兩張+一張線圖開始！
-
 ### geom_area: Data1
 
 ```{r}
 #先確定一下資料格式正確：month是date，consump是numeric
 finalProj$BureauEnergy$data$Dom_Energy_Consumption$month|>class()
-finalProj$BureauEnergy$data$Dom_Energy_Consumption$Energy_Consump|>class()
+finalProj$BureauEnergy$data$Dom_Energy_Consumption$Consump_kloe |>class()
 ```
 
 ```{r}
-ggplot()+
+{ggplot()+
   geom_area(
     data = finalProj$BureauEnergy$data$Dom_Energy_Consumption,
     mapping = aes(
       x=month,
       y=Consump_kloe
     )
-  )
+  )}
 ```
 
 ### geom_area: Data2
@@ -140,7 +139,7 @@ finalProj$BureauEnergy$data$Imp_EnergySource$Import_kloe|>class()
 
 ```{r}
 ##but現在問題是之前上過的！顏色對錯了....
-ggplot()+
+{ggplot()+
   geom_area(
     data = finalProj$BureauEnergy$data$Imp_EnergySource,
     mapping = aes(
@@ -151,20 +150,90 @@ ggplot()+
       alpha = 0.5
     ),
       position= "dodge"
-  )
+  )}
 ```
 
 ### geom_line: Data3
 ```{r}
-ggplot()+
+{ggplot()+
   geom_line(
     data = finalProj$BureauEnergy$data$Imp_EnergyRelience,
     mapping = aes(
       x= month,
       y= relience
     )
-  )
+  )}
 ```
+
+
+##雙軸
+```{r}
+finalProj$plot1 <- list()
+finalProj$plot1$Dom_Energy_Consumption <- function(){
+  geom_area(
+    data = finalProj$BureauEnergy$data$Dom_Energy_Consumption,
+    mapping = aes(
+      x=month,
+      y=Consump_kloe
+    ))
+}
+finalProj$plot1$Imp_EnergySource <- function(){
+  geom_area(
+    data = finalProj$BureauEnergy$data$Imp_EnergySource,
+    mapping = aes(
+      x=month,
+      y=Import_kloe,
+      group = EnergySource,
+      fill = EnergySource,
+      alpha = 0.5
+    ),
+      position= "dodge"
+  )}
+finalProj$plot1$Imp_EnergyRelience <- function(){
+  geom_line(
+    data = finalProj$BureauEnergy$data$Imp_EnergyRelience,
+    mapping = aes(
+      x= month,
+      y= relience*82000
+    )
+  )
+}
+```
+
+```{r}
+###????
+finalProj$plot1$scale_y_area <- function(...){
+  scale_y_continuous(
+    name="Energy Consumption(kloe)",
+    limits = c(0, 8200000),
+    breaks = seq(0, 8200000, by=2000000),
+    labels = seq(0, 8200000, by=2000000),
+    sec.axis = sec_axis(~./82000, name = "Import Relience", breaks = (seq(70,100, by=10)))
+  )
+}
+```
+
+```{r}
+finalProj$plot1$twoplot <- function(){
+  ggplot()+
+    finalProj$plot1$Dom_Energy_Consumption()+
+    finalProj$plot1$Imp_EnergySource()+
+    finalProj$plot1$Imp_EnergyRelience()+
+    finalProj$plot1$scale_y_area()
+}
+
+finalProj$plot1$twoplot()
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
