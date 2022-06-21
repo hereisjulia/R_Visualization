@@ -13,6 +13,24 @@ library(ggplot2)
 library(stringr)
 ```
 
+# Final Project 主題
+大主題環繞在能源上，想問的問題是，台灣的能源政策和國際之間究竟差異在哪?
+1. 各國的能源供需與經濟成長
+2. 各國的能源依賴與經濟成長
+3. 各國的再生能源政策狀態
+4. 台灣的能源依賴現況
+
+
+
+
+
+
+#圖一資料、簡介
+
+圖一進度：
+目前基本架構ok，但右軸定位怪怪的
+且需要調整顏色、text、圖例及標題
+
 ```{r}
 #引入資料~
 ##用INSERT EXCEL導進GITHUB的DATA，這樣老師比較方便~
@@ -42,7 +60,6 @@ finalProj$BureauEnergy$data$Imp_EnergyRelience <- read_excel(destfile, skip = 1)
 
 View(finalProj$BureauEnergy$data$Imp_EnergyRelience)
 ```
-
 #圖一
 /內容包含：台灣能源總量+進口量+依賴進口量
 /data格式：2019年1月到2022年3月的月資料
@@ -108,7 +125,7 @@ lubridate::ymd(finalProj$BureauEnergy$data$Imp_EnergyRelience$month) -> finalPro
 ```
 
 
-##ggplot start
+## ggplot start
 總之現在就開始畫圖~從area兩張+一張線圖開始！
 ### geom_area: Data1
 
@@ -166,7 +183,7 @@ finalProj$BureauEnergy$data$Imp_EnergySource$Import_kloe|>class()
 ```
 
 
-##雙軸
+## 雙軸
 ```{r}
 finalProj$plot1 <- list()
 finalProj$plot1$Dom_Energy_Consumption <- function(){
@@ -244,4 +261,13 @@ finalProj$plot1$twoplot()
 
 
 
+
+
+
+
+
+#圖二資料
+
+
+#圖二
 
