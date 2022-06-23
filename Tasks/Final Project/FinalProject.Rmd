@@ -140,8 +140,6 @@ finalProj$BureauEnergy$data$Imp_EnergySource$Import_kloe|>class()
 
 ## 雙軸
 ```{r}
-areaColor <- c("#A6A6D2", "#8080C0", "#5A5AAD", "#AE57A4", "balck")
-
 finalProj$plot1 <- list()
 finalProj$plot1$Dom_Energy_Consumption <- function(){
   geom_area(
