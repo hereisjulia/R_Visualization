@@ -168,22 +168,37 @@ finalProj$plot1$Imp_EnergyRelience <- function(){
     data = finalProj$BureauEnergy$data$Imp_EnergyRelience,
     mapping = aes(
       x= month,
-      y= relience*82000
-    )
+      y= transferInv_leftbreaks(relience)
+    ),
+    size=1,
+    color="#272727"
   )
 }
-view(finalProj$BureauEnergy$data$Imp_EnergySource)
+view(finalProj$BureauEnergy$data$Imp_EnergyRelience)
 ```
 
 ```{r}
-###????
+#調整右軸的位置
+transfer_leftBreaks = function(breaks){
+      scales::rescale(breaks, 
+        from=c(0,8200000), to=c(90,100))
+}
+#調整要放在右軸的資料
+transferInv_leftbreaks = function(breaks){
+  scales::rescale(breaks,
+        to=c(0,8200000), from=c(90,100))
+}
+
+
 finalProj$plot1$scale_y_area <- function(...){
   scale_y_continuous(
     name="Energy Consumption(kloe)",
     limits = c(0, 8200000),
     breaks = seq(0, 8200000, by=2000000),
     labels = seq(0, 8200000, by=2000000),
-    sec.axis = sec_axis(~./82000, name = "Import Relience", breaks = (seq(70,100, by=10)))
+    sec.axis = sec_axis(name = "Import Relience",
+                        trans = transfer_leftBreaks,
+                        breaks = (seq(90,100, by=2)))
   )
 }
 ```
@@ -198,8 +213,11 @@ finalProj$plot1$twoplot <- function(){
     scale_fill_discrete(name = "能源種類")
 }
 
+##未加入雙軸前，能源種類都有被呈現出來
 ggplot()+finalProj$plot1$Imp_EnergySource()
 
+
+##加入後，有幾個被消失了
 finalProj$plot1$twoplot()
 ```
 
