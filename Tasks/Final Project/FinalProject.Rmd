@@ -126,8 +126,6 @@ lubridate::ymd(finalProj$BureauEnergy$data$Imp_EnergyRelience$month) -> finalPro
 
 ## ggplot start
 總之現在就開始畫圖~從area兩張+一張線圖開始！
-### geom_area: Data1
-
 ```{r}
 #先確定一下資料格式正確：month是date，consump是numeric
 finalProj$BureauEnergy$data$Dom_Energy_Consumption$month|>class()
@@ -135,55 +133,15 @@ finalProj$BureauEnergy$data$Dom_Energy_Consumption$Consump_kloe |>class()
 ```
 
 ```{r}
-{ggplot()+
-  geom_area(
-    data = finalProj$BureauEnergy$data$Dom_Energy_Consumption,
-    mapping = aes(
-      x=month,
-      y=Consump_kloe
-    )
-  )}
-```
-
-### geom_area: Data2
-
-```{r}
 #先確定一下資料格式正確：month是date，Import_kloe量是numeric
 finalProj$BureauEnergy$data$Imp_EnergySource$month|>class()
 finalProj$BureauEnergy$data$Imp_EnergySource$Import_kloe|>class()
 ```
 
-```{r}
-##but現在問題是之前上過的！顏色對錯了....
-{ggplot()+
-  geom_area(
-    data = finalProj$BureauEnergy$data$Imp_EnergySource,
-    mapping = aes(
-      x=month,
-      y=Import_kloe,
-      group = EnergySource,
-      fill = EnergySource,
-      alpha = 0.5
-    ),
-      position= "dodge"
-  )}
-```
-
-### geom_line: Data3
-```{r}
-{ggplot()+
-  geom_line(
-    data = finalProj$BureauEnergy$data$Imp_EnergyRelience,
-    mapping = aes(
-      x= month,
-      y= relience
-    )
-  )}
-```
-
-
 ## 雙軸
 ```{r}
+areaColor <- c("#A6A6D2", "#8080C0", "#5A5AAD", "#AE57A4", "balck")
+
 finalProj$plot1 <- list()
 finalProj$plot1$Dom_Energy_Consumption <- function(){
   geom_area(
@@ -191,7 +149,9 @@ finalProj$plot1$Dom_Energy_Consumption <- function(){
     mapping = aes(
       x=month,
       y=Consump_kloe
-    ))
+    ),
+    fill = "#5CADAD"
+)
 }
 finalProj$plot1$Imp_EnergySource <- function(){
   geom_area(
@@ -200,10 +160,10 @@ finalProj$plot1$Imp_EnergySource <- function(){
       x=month,
       y=Import_kloe,
       group = EnergySource,
-      fill = EnergySource,
-      alpha = 0.5
+      fill= EnergySource,
+      alpha=0.5
     ),
-      position= "dodge"
+    position= "stack"
   )}
 finalProj$plot1$Imp_EnergyRelience <- function(){
   geom_line(
@@ -214,6 +174,7 @@ finalProj$plot1$Imp_EnergyRelience <- function(){
     )
   )
 }
+view(finalProj$BureauEnergy$data$Imp_EnergySource)
 ```
 
 ```{r}
@@ -235,35 +196,46 @@ finalProj$plot1$twoplot <- function(){
     finalProj$plot1$Dom_Energy_Consumption()+
     finalProj$plot1$Imp_EnergySource()+
     finalProj$plot1$Imp_EnergyRelience()+
-    finalProj$plot1$scale_y_area()
+    finalProj$plot1$scale_y_area()+
+    scale_fill_discrete(name = "能源種類")
 }
+
+ggplot()+finalProj$plot1$Imp_EnergySource()
 
 finalProj$plot1$twoplot()
 ```
 
+
 # 圖二資料、簡介
 目前考慮，比較國內外對再生能源的使用程度。
 "https://www.iea.org/data-and-statistics/data-browser/?country=WORLD&fuel=Renewables%20and%20waste&indicator=SDG72" 這是renewable對總能源用量的占比，還有風和太陽能發電的量
+
+line graph呈現各個國家renewable能源占總能源用量的比例
+
 ```{r}
 finalProj$IEA$source <- "https://www.iea.org/data-and-statistics/data-browser?country=TAIPEI&fuel=Renewables%20and%20waste&indicator=SDG72"
 ReNew_World <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20share%20in%20final%20energy%20consumption%20(SDG%207.2)%20%20-%20World.csv", skip = 3)
 Renew_Taiwan <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20share%20in%20final%20energy%20consumption%20(SDG%207.2)%20%20-%20Chinese%20Taipei.csv", skip = 3)
 ReNew_EU <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20share%20in%20final%20energy%20consumption%20(SDG%207.2)%20%20-%20European%20Union%20-%2028.csv",skip=3)
+ReNew_USA <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20share%20in%20final%20energy%20consumption%20(SDG%207.2)%20%20-%20United%20States.csv", skip = 3)
+ReNew_China <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20share%20in%20final%20energy%20consumption%20(SDG%207.2)%20%20-%20China%20(People's%20Republic%20of%20China%20and%20Hong%20Kong%20China).csv", skip=3)
+```
 
-names(ReNew_World)[[1]] <- "Year"
-names(Renew_Taiwan)[[1]] <- "Year"
-names(ReNew_EU)[[1]] <- "Year"
-
-
-a <- merge(x=ReNew_World, y=Renew_Taiwan, by= "Year")
-finalProj$IEA$data$ReNew_EnCon <- merge(x=a, y=ReNew_EU, by= "Year")
-
-finalProj$IEA$data$ReNew_EnCon <- select(finalProj$IEA$data$ReNew_EnCon, c(1,2,4,6))
-names(finalProj$IEA$data$ReNew_EnCon)[[2]] <- "World"
-names(finalProj$IEA$data$ReNew_EnCon)[[3]] <- "Taiwan"
-names(finalProj$IEA$data$ReNew_EnCon)[[4]] <- "EU"
-
-view(finalProj$IEA$data$ReNew_EnCon)
+這邊做一個簡單的quickMerge function， 因為我的data set都一個個國家的所以加速合併。
+```{r}
+quickMerge <- function(df1, df2){
+  names(df1)[[1]] <- "Year"
+  names(df2)[[1]] <- "Year"
+  a <- merge(x=df1, y=df2, by= "Year")
+  select(a, -contains("Units"))
+}
+a <- quickMerge(ReNew_World,Renew_Taiwan)
+a <- quickMerge(a, ReNew_EU)
+names(a) <- c("Year", "World", "Taiwan", "EU")
+a <- quickMerge(a, ReNew_USA)
+a <- quickMerge(a, ReNew_China)
+names(a) <- c("Year", "World", "Taiwan", "EU", "USA","China")
+finalProj$IEA$data$ReNew_EnCon <-a
 ```
 ```{r}
 pivot_longer(
@@ -272,21 +244,31 @@ pivot_longer(
   names_to = "Country",
   values_to = "Renewable share"
 ) -> finalProj$IEA$data$ReNew_EnCon
-
 ```
+
 # 圖二
 ```{r}
+lineColor= c("#3C3C3C", "#3C3C3C", "#4F9D9D", "#3C3C3C", "#3C3C3C")
+
 ggplot()+
   geom_line(
     data = finalProj$IEA$data$ReNew_EnCon,
     mapping = aes(
       x=Year,
       y=`Renewable share`,
-      group = Country
-    )
+      group = Country,
+      color = Country
+      ),
+    size =1
+  )+
+  scale_x_continuous(
+    breaks= seq(1990, 2020, by=5),
+    labels = seq(1990, 2020, by=5)
   )
 ```
 # 圖三資料、簡介
+想嘗試用地圖+指定國家的renewalbe能源來源(圓餅圖?)
+data: https://www.iea.org/data-and-statistics/data-browser?country=TAIPEI&fuel=Renewables%20and%20waste&indicator=RenewGenBySource
 
 
 # 圖三
