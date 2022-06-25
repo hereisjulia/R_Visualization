@@ -306,7 +306,7 @@ ggplot()+
     y= "再生能源佔總能源消耗",
     title= "台灣再生能源使用比例",
     subtitle= "單位:%",
-    caption= "資料來源:IEA"
+    caption= "資料來源: IEA"
   )+
   theme(text=element_text(size = 10))
 ```
