@@ -26,5 +26,6 @@ ggmap::register_google(key="AIzaSyDEzCEHE_82xW8TMBbhbOQVvJsPmSwN4Jo")
 
 studyNotes <- list()
 studyNotes$Books$MartinR <- "https://tpemartin.github.io/NTPU-R-for-Data-Science/"
+studyNotes$Books$MartinRVisual <- "https://tpemartin.github.io/economic-data-visualization-2022/"
 studyNotes$Vimeo$MartinR$site <- "https://vimeo.com/showcase/7588787"
 studyNotes$Vimeo$MartinR$key <- "usr_emajor301_2022"

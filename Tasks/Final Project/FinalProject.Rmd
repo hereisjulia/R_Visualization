@@ -219,6 +219,8 @@ ggplot()+finalProj$plot1$Imp_EnergySource()
 
 ##加入後，有幾個被消失了
 finalProj$plot1$twoplot()
+
+##好像有可能是scale的問題，在limits的部份把部分應該顯現的資料給弄掉了?
 ```
 
 
@@ -263,9 +265,26 @@ pivot_longer(
 ```
 
 # 圖二
-```{r}
-lineColor= c("#3C3C3C", "#3C3C3C", "#4F9D9D", "#3C3C3C", "#3C3C3C")
 
+調整順序&顏色
+```{r}
+#reorder
+finalProj$IEA$data$ReNew_EnCon$Country |> as.factor() -> finalProj$IEA$data$ReNew_EnCon$Country
+finalProj$IEA$data$ReNew_EnCon$Country |> levels()
+finalProj$IEA$data$ReNew_EnCon$Country |> ordered(levels=c("World", "Taiwan", "EU", "USA", "China")) -> finalProj$IEA$data$ReNew_EnCon$Country
+finalProj$IEA$data$ReNew_EnCon$Country |> levels()
+
+#color
+lineColor= c("black", "#CE2029", "#E0E0E0","#D0D0D0", "#BEBEBE")
+colorAdj <- function(lineColor){
+  scale_color_manual(
+    values = lineColor
+  )
+}
+```
+
+畫圖
+```{r}
 ggplot()+
   geom_line(
     data = finalProj$IEA$data$ReNew_EnCon,
@@ -280,7 +299,16 @@ ggplot()+
   scale_x_continuous(
     breaks= seq(1990, 2020, by=5),
     labels = seq(1990, 2020, by=5)
-  )
+  )+
+  colorAdj(lineColor)+
+  labs(
+    x= "年度",
+    y= "再生能源佔總能源消耗",
+    title= "台灣再生能源使用比例",
+    subtitle= "單位:%",
+    caption= "資料來源:IEA"
+  )+
+  theme(text=element_text(size = 10))
 ```
 # 圖三資料、簡介
 想嘗試用地圖+指定國家的renewalbe能源來源(圓餅圖?)
