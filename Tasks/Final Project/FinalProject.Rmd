@@ -259,6 +259,13 @@ geom_area(
     ),
     size=1,
     color="#272727"
+  )+
+  labs(
+    x="年度",
+    y="進口量",
+    title="台灣進口能源依賴",
+    subtitle="單位: 公秉油當量",
+    caption="資料來源: 經濟部能源局"
   )
 ```
 # 圖二資料、簡介
@@ -369,12 +376,76 @@ data: https://www.iea.org/data-and-statistics/data-browser?country=TAIPEI&fuel=R
 
 # 圖三
 
+```{r}
+finalProj$IEA$source2 <- "https://www.iea.org/data-and-statistics/data-browser?country=USA&fuel=Renewables%20and%20waste&indicator=RenewGenBySource"
+
+EU_RNbySource <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20electricity%20generation%20by%20source%20(non-combustible)%20-%20OECD%20Europe.csv", skip=3)
+
+China_RNbySource <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20electricity%20generation%20by%20source%20(non-combustible)%20-%20People's%20Republic%20of%20China.csv", skip=3)
+
+USA_RNbySource <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20electricity%20generation%20by%20source%20(non-combustible)%20-%20United%20States.csv", skip =3)
+
+Taiwan_RNbySource <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20electricity%20generation%20by%20source%20(non-combustible)%20-%20Chinese%20Taipei.csv", skip=3)
+
+view(World_RNbySource)
 
 
+Taiwan_RNbySource |> select(-contains("Units")) -> Taiwan_RNbySource
+EU_RNbySource |> select(-contains("Units")) -> EU_RNbySource
+USA_RNbySource |> select(-contains("Units")) -> USA_RNbySource
+China_RNbySource |> select(-contains("Units")) -> China_RNbySource
 
+pivot_longer(
+  Taiwan_RNbySource,
+  cols=-c(1),
+  names_to = "RenwableSource",
+  values_to = "GWh"
+)-> Taiwan_RNbySource
+Taiwan_RNbySource |> mutate(Country="Taiwan") -> Taiwan_RNbySource
 
+pivot_longer(
+  EU_RNbySource,
+  cols=-c(1),
+  names_to = "RenwableSource",
+  values_to = "GWh"
+)-> EU_RNbySource
+EU_RNbySource |> mutate(Country="EU") -> EU_RNbySource
 
+pivot_longer(
+  USA_RNbySource,
+  cols=-c(1),
+  names_to = "RenwableSource",
+  values_to = "GWh"
+)-> USA_RNbySource
+USA_RNbySource |> mutate(Country="USA") -> USA_RNbySource
 
+pivot_longer(
+  China_RNbySource,
+  cols=-c(1),
+  names_to = "RenwableSource",
+  values_to = "GWh"
+)-> China_RNbySource
+China_RNbySource |> mutate(Country="China") -> China_RNbySource
+
+A <- rbind(Taiwan_RNbySource, EU_RNbySource, USA_RNbySource, China_RNbySource)
+names(A)[[1]] <- "Year"
+
+finalProj$IEA$data2$RenewableSources <- filter(A, Year==2020)
+```
+
+```{r}
+#用col好像不太對，看不出差異，可能要用圓餅??
+ggplot(
+      data=finalProj$IEA$data2$RenewableSources,
+      mapping=aes(x=Country,y=GWh)
+)+
+  geom_bar(
+    stat = "identity", width=1, color="white"
+    )+
+  coord_polar("y",start=0)+
+  facet_grid(cols = vars(Country))+
+  theme_void()
+```
 
 
 
