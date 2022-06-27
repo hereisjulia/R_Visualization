@@ -57,7 +57,7 @@ destfile <- "Import_Reliance.xlsx"
 curl::curl_download(url, destfile)
 finalProj$BureauEnergy$data$Imp_EnergyRelience <- read_excel(destfile, skip = 1)
 
-View(finalProj$BureauEnergy$data$Imp_EnergyRelience)
+View(finalProj$BureauEnergy$data$Dom_Energy_Consumption)
 ```
 # 圖一
 /內容包含：台灣能源總量+進口量+依賴進口量
@@ -152,7 +152,8 @@ finalProj$plot1$Dom_Energy_Consumption <- function(){
 )
 }
 finalProj$plot1$Imp_EnergySource <- function(){
-  geom_area(
+  list(
+    geom_area(
     data = finalProj$BureauEnergy$data$Imp_EnergySource,
     mapping = aes(
       x=month,
@@ -162,7 +163,10 @@ finalProj$plot1$Imp_EnergySource <- function(){
       alpha=0.5
     ),
     position= "stack"
-  )}
+  ),
+    scale_fill_manual(
+      values=lineColor
+    )}
 finalProj$plot1$Imp_EnergyRelience <- function(){
   geom_line(
     data = finalProj$BureauEnergy$data$Imp_EnergyRelience,
@@ -176,6 +180,7 @@ finalProj$plot1$Imp_EnergyRelience <- function(){
 }
 view(finalProj$BureauEnergy$data$Imp_EnergyRelience)
 ```
+
 
 ```{r}
 #調整右軸的位置
@@ -218,12 +223,44 @@ ggplot()+finalProj$plot1$Imp_EnergySource()
 
 
 ##加入後，有幾個被消失了
-finalProj$plot1$twoplot()
+finalProj$plot1$twoplot()+
+  labs(
+    x="年度",
+    y="進口量",
+    title="台灣進口能源依賴",
+    subtitle="單位: 公秉油當量",
+    caption="資料來源: 經濟部能源局"
+  )
 
 ##好像有可能是scale的問題，在limits的部份把部分應該顯現的資料給弄掉了?
 ```
 
-
+```{r}
+ggplot()+
+geom_area(
+    data = finalProj$BureauEnergy$data$Imp_EnergySource,
+    mapping = aes(
+      x=month,
+      y=Import_kloe,
+      group = EnergySource,
+      fill= EnergySource,
+      alpha=0.5
+    ),
+    position= "stack"
+  )+
+  scale_fill_manual(
+      values=lineColor
+    )+
+  geom_line(
+    data = finalProj$BureauEnergy$data$Imp_EnergyRelience,
+    mapping = aes(
+      x= month,
+      y= transferInv_leftbreaks(relience)
+    ),
+    size=1,
+    color="#272727"
+  )
+```
 # 圖二資料、簡介
 目前考慮，比較國內外對再生能源的使用程度。
 "https://www.iea.org/data-and-statistics/data-browser/?country=WORLD&fuel=Renewables%20and%20waste&indicator=SDG72" 這是renewable對總能源用量的占比，還有風和太陽能發電的量
@@ -285,6 +322,7 @@ colorAdj <- function(lineColor){
 
 畫圖
 ```{r}
+view(finalProj$IEA$data$ReNew_EnCon)
 ggplot()+
   geom_line(
     data = finalProj$IEA$data$ReNew_EnCon,
@@ -297,19 +335,33 @@ ggplot()+
     size =1
   )+
   scale_x_continuous(
-    breaks= seq(1990, 2020, by=5),
-    labels = seq(1990, 2020, by=5)
+    breaks= c(2019, seq(1990, 2019, by=5)),
+    labels = c(2019, seq(1990, 2019, by=5))
+  )+
+  scale_y_continuous(
+    breaks = c(2.02, 4.17, 6.07, 16.07, 33.6, seq(0,35,by=10)),
+    labels = c(2.02, 4.17, 6.07, 16.07, 33.6, seq(0,35,by=10))
+  )+
+  geom_text(
+    mapping = aes(
+      x = c(2020.5,2020.5,2020,2020.5,2020.5),
+      y = c(3,17.2, 18.7, 10.42, 14.4),
+      label = c("Taiwan","World", "EU", "USA", "China")
+    ),
+    color = c("#CE2029","black","#E0E0E0","#D0D0D0", "#BEBEBE"),
+    size = 3.5
   )+
   colorAdj(lineColor)+
   labs(
     x= "年度",
     y= "再生能源佔總能源消耗",
     title= "台灣再生能源使用比例",
-    subtitle= "單位:%",
+    subtitle= "單位: %",
     caption= "資料來源: IEA"
   )+
   theme(text=element_text(size = 10))
 ```
+
 # 圖三資料、簡介
 想嘗試用地圖+指定國家的renewalbe能源來源(圓餅圖?)
 data: https://www.iea.org/data-and-statistics/data-browser?country=TAIPEI&fuel=Renewables%20and%20waste&indicator=RenewGenBySource
