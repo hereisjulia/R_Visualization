@@ -85,6 +85,14 @@ pivot_longer(
 ```{r}
 paste(finalProj$BureauEnergy$data$Dom_Energy_Consumption$month, "-01") -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$month
 lubridate::ymd(finalProj$BureauEnergy$data$Dom_Energy_Consumption$month) -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$month
+finalProj$BureauEnergy$data$Dom_Energy_Consumption |>
+  select(month, Consump_kloe) |>
+  rename(
+    x=month, y=Consump_kloe
+  ) |>
+  mutate(
+    source="Dom_Energy_Consumption"
+  ) -> .df1
 ```
 
 ### Data2: 進口量
@@ -100,13 +108,23 @@ pivot_longer(
 #轉date
 paste(finalProj$BureauEnergy$data$Imp_EnergySource$month, "-01") -> finalProj$BureauEnergy$data$Imp_EnergySource$month
 lubridate::ymd(finalProj$BureauEnergy$data$Imp_EnergySource$month) -> finalProj$BureauEnergy$data$Imp_EnergySource$month
+finalProj$BureauEnergy$data$Imp_EnergySource |>
+  select(month, Import_kloe) |>
+  rename(
+    x=month, y=Import_kloe
+  ) |>
+  mutate(
+    source=paste("Imp_Source: ", finalProj$BureauEnergy$data$Imp_EnergySource$日期)
+  ) -> .df2
 ```
 
+合併兩者
 ```{r}
-names(finalProj$BureauEnergy$data$Imp_EnergySource)[[1]] <- "EnergySource"
-View(finalProj$BureauEnergy$data$Imp_EnergySource)
+dplyr::bind_rows(
+  .df1, .df2
+) -> dfall
+view(dfall)
 ```
-
 
 ### Data3: 進口能源依賴
 ```{r}
@@ -132,41 +150,9 @@ finalProj$BureauEnergy$data$Dom_Energy_Consumption$month|>class()
 finalProj$BureauEnergy$data$Dom_Energy_Consumption$Consump_kloe |>class()
 ```
 
-```{r}
-#先確定一下資料格式正確：month是date，Import_kloe量是numeric
-finalProj$BureauEnergy$data$Imp_EnergySource$month|>class()
-finalProj$BureauEnergy$data$Imp_EnergySource$Import_kloe|>class()
-```
-
 ## 雙軸
 ```{r}
 finalProj$plot1 <- list()
-finalProj$plot1$Dom_Energy_Consumption <- function(){
-  geom_area(
-    data = finalProj$BureauEnergy$data$Dom_Energy_Consumption,
-    mapping = aes(
-      x=month,
-      y=Consump_kloe
-    ),
-    fill = "#5CADAD"
-)
-}
-finalProj$plot1$Imp_EnergySource <- function(){
-  list(
-    geom_area(
-    data = finalProj$BureauEnergy$data$Imp_EnergySource,
-    mapping = aes(
-      x=month,
-      y=Import_kloe,
-      group = EnergySource,
-      fill= EnergySource,
-      alpha=0.5
-    ),
-    position= "stack"
-  ),
-    scale_fill_manual(
-      values=lineColor
-    )}
 finalProj$plot1$Imp_EnergyRelience <- function(){
   geom_line(
     data = finalProj$BureauEnergy$data$Imp_EnergyRelience,
@@ -178,7 +164,6 @@ finalProj$plot1$Imp_EnergyRelience <- function(){
     color="#272727"
   )
 }
-view(finalProj$BureauEnergy$data$Imp_EnergyRelience)
 ```
 
 
@@ -236,15 +221,16 @@ finalProj$plot1$twoplot()+
 ```
 
 ```{r}
+lineColor= c("black", "#4F4F4F", "#6C6C6C", "#E0E0E0","#D0D0D0", "#BEBEBE")
+
 ggplot()+
 geom_area(
-    data = finalProj$BureauEnergy$data$Imp_EnergySource,
+    data = dfall,
     mapping = aes(
-      x=month,
-      y=Import_kloe,
-      group = EnergySource,
-      fill= EnergySource,
-      alpha=0.5
+      x=x,
+      y=y,
+      group = source,
+      fill= source
     ),
     position= "stack"
   )+
@@ -260,6 +246,7 @@ geom_area(
     size=1,
     color="#272727"
   )+
+  finalProj$plot1$scale_y_area()+
   labs(
     x="年度",
     y="進口量",
