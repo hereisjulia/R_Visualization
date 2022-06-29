@@ -310,12 +310,102 @@ ggplot()+
   theme(legend.position="none")
 ```
 
-# 圖三資料、簡介
-想嘗試用地圖+指定國家的renewalbe能源來源(圓餅圖?)
+
+
+#圖三資料、簡介
+想要畫一個呈現台灣2021年度發電來源的雙層圓餅圖
+內層分成抽蓄水力、火力、核能、再生能源
+外層則分成台電、民營電廠、自用發電設備
+```{r}
+url <- "https://github.com/hereisjulia/R_Visualization/blob/main/Tasks/Final%20Project/%E7%99%BC%E9%9B%BB%E9%87%8F_report.xlsx?raw=true"
+destfile <- "Electricity_prod.xlsx"
+curl::curl_download(url, destfile)
+finalProj$BureauEnergy$data3$Electricity_prod <- read_excel(destfile, 
+    skip = 1)
+
+names(finalProj$BureauEnergy$data3$Electricity_prod) <- c("發電種類","2020","2021","2022","來源")
+pivot_longer(
+  data=finalProj$BureauEnergy$data3$Electricity_prod,
+  cols=c(2:4),
+  names_to = "年度",
+  values_to = "發電量"
+)->finalProj$BureauEnergy$data3$Electricity_prod
+
+finalProj$BureauEnergy$data3$Electricity_prod |> arrange(desc(發電種類)) |> filter(年度==c("2021")) -> a
+a[c(1:12),c(1:4)] |> filter(發電量>0) -> finalProj$BureauEnergy$data3$Electricity_prod
+finalProj$BureauEnergy$data3$Electricity_prod  |> view()
+finalProj$BureauEnergy$data3$Electricity_prod$發電量|> as.numeric() -> finalProj$BureauEnergy$data3$Electricity_prod$發電量
+finalProj$BureauEnergy$data3$Electricity_prod |> arrange(發電種類) -> finalProj$BureauEnergy$data3$Electricity_prod
+
+finalProj$BureauEnergy$data3$Electricity_prod |> group_by(發電種類)|> mutate(各類發電量=sum(發電量)) |> distinct(各類發電量, .keep_all = TRUE) |> select(-發電量) -> finalProj$BureauEnergy$data3$Electricity_sum
+names(finalProj$BureauEnergy$data3$Electricity_sum)[[4]] <- "發電量"
+finalProj$BureauEnergy$data3$Electricity_sum|>view()
+```
+
+#圖三
+參考:"https://community.rstudio.com/t/how-to-create-a-ggplot2-pie-and-donut-chart-on-same-plot/42798/3"
+```{r}
+labels <- data.frame(
+  source = c("台電","台電","台電","民營電廠", "自用發電設備","台電","民營電廠", "自用發電設備"),
+  generation = c(27787947580,3184025000,4589313306,2713498811,10125514849,161116154667,44561609987,36857983270),
+  stringsAsFactors = FALSE)
+
+labels |> mutate(Total=sum(generation)) |> mutate(CUM=cumsum(generation)) |> mutate(Bottom=CUM-generation) |> mutate(Mid=(CUM+Bottom)/2)->labels
+
+view(labels)
+```
+
+
+
+```{r}
+barColor=c("#8E4A49","#C5C392","#587792","#8D7471")
+barColor2=c("#8E4A49","#8E4A49","#8E4A49","#C5C392","#C5C392","#C5C392","#587792","#8D7471")
+
+
+ggplot()+
+  geom_col(
+    data=finalProj$BureauEnergy$data3$Electricity_sum,
+    mapping=aes(
+      x=2,
+      y=發電量,
+      group=發電種類
+    ),
+    position="stack",
+    color="black",
+    fill=barColor
+  )+
+  geom_col(
+    data=finalProj$BureauEnergy$data3$Electricity_prod,
+    mapping=aes(
+      x=3,
+      y=發電量,
+      group=發電種類
+    ),
+    position="stack",
+    color="black",
+    fill=barColor2
+  )+
+  geom_label(
+    data=labels,
+    mapping=aes(label = source, x= 3.5, y = Mid),
+    size = 2,
+    position="identity"
+  )+
+  xlim(0, 3.5)+
+  labs(title = "台灣發電來源",
+       caption = "資料來源: 經濟部能源局",
+       x = NULL, y = NULL) + 
+  theme(axis.ticks=element_blank(), axis.text=element_blank(), axis.title=element_blank())+theme_void()+
+  coord_polar(theta = "y") 
+```
+
+
+
+# 廢棄圖三資料、簡介
 data: https://www.iea.org/data-and-statistics/data-browser?country=TAIPEI&fuel=Renewables%20and%20waste&indicator=RenewGenBySource
 
 
-# 圖三
+# 廢棄圖三
 
 ```{r}
 finalProj$IEA$source2 <- "https://www.iea.org/data-and-statistics/data-browser?country=USA&fuel=Renewables%20and%20waste&indicator=RenewGenBySource"
