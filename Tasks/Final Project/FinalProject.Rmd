@@ -57,7 +57,7 @@ destfile <- "Import_Reliance.xlsx"
 curl::curl_download(url, destfile)
 finalProj$BureauEnergy$data$Imp_EnergyRelience <- read_excel(destfile, skip = 1)
 
-View(finalProj$BureauEnergy$data$Dom_Energy_Consumption)
+View(finalProj$BureauEnergy$data$Imp_EnergySource)
 ```
 # 圖一
 /內容包含：台灣能源總量+進口量+依賴進口量
@@ -85,14 +85,6 @@ pivot_longer(
 ```{r}
 paste(finalProj$BureauEnergy$data$Dom_Energy_Consumption$month, "-01") -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$month
 lubridate::ymd(finalProj$BureauEnergy$data$Dom_Energy_Consumption$month) -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$month
-finalProj$BureauEnergy$data$Dom_Energy_Consumption |>
-  select(month, Consump_kloe) |>
-  rename(
-    x=month, y=Consump_kloe
-  ) |>
-  mutate(
-    source="Dom_Energy_Consumption"
-  ) -> .df1
 ```
 
 ### Data2: 進口量
@@ -108,22 +100,6 @@ pivot_longer(
 #轉date
 paste(finalProj$BureauEnergy$data$Imp_EnergySource$month, "-01") -> finalProj$BureauEnergy$data$Imp_EnergySource$month
 lubridate::ymd(finalProj$BureauEnergy$data$Imp_EnergySource$month) -> finalProj$BureauEnergy$data$Imp_EnergySource$month
-finalProj$BureauEnergy$data$Imp_EnergySource |>
-  select(month, Import_kloe) |>
-  rename(
-    x=month, y=Import_kloe
-  ) |>
-  mutate(
-    source=paste("Imp_Source: ", finalProj$BureauEnergy$data$Imp_EnergySource$日期)
-  ) -> .df2
-```
-
-合併兩者
-```{r}
-dplyr::bind_rows(
-  .df1, .df2
-) -> dfall
-view(dfall)
 ```
 
 ### Data3: 進口能源依賴
@@ -171,22 +147,22 @@ finalProj$plot1$Imp_EnergyRelience <- function(){
 #調整右軸的位置
 transfer_leftBreaks = function(breaks){
       scales::rescale(breaks, 
-        from=c(0,8200000), to=c(90,100))
+        from=c(0,14000), to=c(90,100))
 }
 #調整要放在右軸的資料
 transferInv_leftbreaks = function(breaks){
   scales::rescale(breaks,
-        to=c(0,8200000), from=c(90,100))
+        to=c(0,14000), from=c(90,100))
 }
 
 
 finalProj$plot1$scale_y_area <- function(...){
   scale_y_continuous(
-    name="Energy Consumption(kloe)",
-    limits = c(0, 8200000),
-    breaks = seq(0, 8200000, by=2000000),
-    labels = seq(0, 8200000, by=2000000),
-    sec.axis = sec_axis(name = "Import Relience",
+    name="進口能源種類",
+    limits = c(0, 14000),
+    breaks = seq(0, 14000, by=2000),
+    labels = seq(0, 14000, by=2000),
+    sec.axis = sec_axis(name = "進口能源依賴率",
                         trans = transfer_leftBreaks,
                         breaks = (seq(90,100, by=2)))
   )
@@ -194,48 +170,25 @@ finalProj$plot1$scale_y_area <- function(...){
 ```
 
 ```{r}
-finalProj$plot1$twoplot <- function(){
-  ggplot()+
-    finalProj$plot1$Dom_Energy_Consumption()+
-    finalProj$plot1$Imp_EnergySource()+
-    finalProj$plot1$Imp_EnergyRelience()+
-    finalProj$plot1$scale_y_area()+
-    scale_fill_discrete(name = "能源種類")
-}
-
-##未加入雙軸前，能源種類都有被呈現出來
-ggplot()+finalProj$plot1$Imp_EnergySource()
-
-
-##加入後，有幾個被消失了
-finalProj$plot1$twoplot()+
-  labs(
-    x="年度",
-    y="進口量",
-    title="台灣進口能源依賴",
-    subtitle="單位: 公秉油當量",
-    caption="資料來源: 經濟部能源局"
-  )
-
-##好像有可能是scale的問題，在limits的部份把部分應該顯現的資料給弄掉了?
+names(finalProj$BureauEnergy$data$Imp_EnergySource)[[1]] <- "Source"
+finalProj$BureauEnergy$data$Imp_EnergySourc$日期<- factor(finalProj$BureauEnergy$data$Imp_EnergySource$Source, levels=c("生質能及廢棄物", "核能", "天然氣", "煤及煤產品","原油及石油產品"))
 ```
 
 ```{r}
-lineColor= c("black", "#4F4F4F", "#6C6C6C", "#E0E0E0","#D0D0D0", "#BEBEBE")
+areaColor= c("#BEBEBE","#D0D0D0", "#E0E0E0", "#6C6C6C", "#4F4F4F", "black")
 
 ggplot()+
 geom_area(
-    data = dfall,
+    data = finalProj$BureauEnergy$data$Imp_EnergySource,
     mapping = aes(
-      x=x,
-      y=y,
-      group = source,
-      fill= source
+      x=month,
+      y=Import_kloe/1000,
+      fill= Source
     ),
     position= "stack"
   )+
   scale_fill_manual(
-      values=lineColor
+      values=areaColor
     )+
   geom_line(
     data = finalProj$BureauEnergy$data$Imp_EnergyRelience,
@@ -244,7 +197,7 @@ geom_area(
       y= transferInv_leftbreaks(relience)
     ),
     size=1,
-    color="#272727"
+    color="#CE2029"
   )+
   finalProj$plot1$scale_y_area()+
   labs(
@@ -353,7 +306,8 @@ ggplot()+
     subtitle= "單位: %",
     caption= "資料來源: IEA"
   )+
-  theme(text=element_text(size = 10))
+  theme(text=element_text(size = 10))+
+  theme(legend.position="none")
 ```
 
 # 圖三資料、簡介
@@ -374,7 +328,7 @@ USA_RNbySource <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visu
 
 Taiwan_RNbySource <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20electricity%20generation%20by%20source%20(non-combustible)%20-%20Chinese%20Taipei.csv", skip=3)
 
-view(World_RNbySource)
+view(China_RNbySource)
 
 
 Taiwan_RNbySource |> select(-contains("Units")) -> Taiwan_RNbySource
@@ -418,19 +372,25 @@ A <- rbind(Taiwan_RNbySource, EU_RNbySource, USA_RNbySource, China_RNbySource)
 names(A)[[1]] <- "Year"
 
 finalProj$IEA$data2$RenewableSources <- filter(A, Year==2020)
+view(finalProj$IEA$data2$RenewableSources)
+```
+
+
+```{r}
+finalProj$IEA$data2$RenewableSources$RenwableSource|>as.factor()
+levels(finalProj$IEA$data2$RenewableSources$RenwableSource)
+finalProj$IEA$data2$RenewableSources$RenwableSource <- factor(finalProj$IEA$data2$RenewableSources$RenwableSource, levels=c("Hydro","Wind","Solar PV","Geothermal","Solar thermal","Tide, wave, ocean"))
 ```
 
 ```{r}
 #用col好像不太對，看不出差異，可能要用圓餅??
-ggplot(
-      data=finalProj$IEA$data2$RenewableSources,
-      mapping=aes(x=Country,y=GWh)
-)+
+ggplot()+
   geom_bar(
+    data=finalProj$IEA$data2$RenewableSources,
+    mapping=aes(x=Country,y=GWh, fill=RenwableSource),
     stat = "identity", width=1, color="white"
     )+
-  coord_polar("y",start=0)+
-  facet_grid(cols = vars(Country))+
+  coord_polar()+
   theme_void()
 ```
 
