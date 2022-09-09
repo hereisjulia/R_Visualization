@@ -465,6 +465,83 @@ ggplot(data = mpg, mapping = aes(x = class, y = hwy)) +
   geom_boxplot(position="dodge")
 ```
 
+#3.9 Coordinate systems
+some helpful coordinate systems:
+`coord_flip()`   --- switch the x and y axis
+`coord_quickmap()`  --- sets the aspect ratio correctly for maps. 
+`coord_polar()`   --- uses polar coordinates. 
+
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot() +
+  coord_flip()
+```
+```{r}
+nz <- map_data("nz")
+
+ggplot(nz, aes(long,lat,group=group))+
+  geom_polygon(fill="white",color="black")
+```
+```{r}
+try_polar <- ggplot(data=diamonds)+
+  geom_bar(
+    mapping=aes(x=cut, fill=cut),
+    show.legend=FALSE,
+    width=1
+  )+
+  theme(aspect.ratio=1)+
+  labs(x=NULL,Y=NULL)
+
+try_polar+coord_flip()
+try_polar+coord_polar()
+```
+##3.9.1 Exercise
+1. Turn a stacked bar chart into a pie chart using coord_polar().
+```{r}
+ggplot(data=diamonds)+
+  geom_bar(
+    mapping=aes(x=color,fill=color),
+    show.legend=FALSE,
+    width=1
+  )+
+  coord_polar()
+```
+2. What does labs() do? Read the documentation.
+> Modify axis, legend, and plot labels
+labs(
+  ...,
+  title = waiver(),
+  subtitle = waiver(),
+  caption = waiver(),
+  tag = waiver(),
+  alt = waiver(),
+  alt_insight = waiver()
+)
+
+3. What’s the difference between coord_quickmap() and coord_map()?
+///
+
+4. What does the plot below tell you about the relationship between city and highway mpg? Why is coord_fixed() important? What does geom_abline() do?
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point(size=1,position="jitter") + 
+  geom_abline() +
+  coord_fixed()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
