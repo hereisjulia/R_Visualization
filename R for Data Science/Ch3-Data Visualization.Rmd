@@ -1,0 +1,446 @@
+---
+title: "Ch3-dataVisualization"
+author: "julia"
+date: "2022/7/26"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+
+```
+
+
+`mpg` contains observations collected by the US Environmental Protection Agency on 38 models of car.
+```{r}
+ggplot2::mpg
+view(mpg)
+```
+
+`manufacturer`: 製造商名稱
+`model`: 模型名稱
+`displ` : 發動機排量，升
+`year`: 製造年份
+`hwy`: 氣缸數
+`trans`: 傳輸類型
+`drv`: the type of drive train, where f = front-wheel drive, r = rear wheel drive, 4 = 4wd
+`cty`: 每加侖城市英里數
+`hwy`: 每加侖公路英里數
+`fl` : 汽油種類
+`class`: 車型
+
+##3.2.2 Creating a ggplot
+```{r}
+ggplot(data=mpg)+
+  geom_point(
+    mapping=aes(
+      x=displ,
+      y=hwy
+    )
+  )
+```
+The plot shows a negative relationship between engine size (displ) and fuel efficiency (hwy).
+
+
+##3.2.3 A graphing template
+Basic Template: 
+ggplot(data = <DATA>) + 
+  <GEOM_FUNCTION>(mapping = aes(<MAPPINGS>))
+
+
+##3.2.4 Exercises
+1. Run ggplot(data = mpg). What do you see?
+```{r}
+ggplot(data=mpg)
+```
+2. How many rows are in mpg? How many columns?
+```{r}
+?mpg
+#A data frame with 234 rows and 11 variables
+```
+
+3. What does the drv variable describe? Read the help for ?mpg to find out.
+`drv`: the type of drive train, where f = front-wheel drive, r = rear wheel drive, 4 = 4wd
+
+4. Make a scatterplot of hwy vs cyl.
+```{r}
+ggplot(data=mpg)+
+  geom_point(
+    mapping=aes(
+      x=cyl,
+      y=hwy
+    )
+  )
+```
+
+5. What happens if you make a scatterplot of class vs drv? Why is the plot not useful?
+```{r}
+ggplot(data=mpg)+
+  geom_point(
+    mapping=aes(
+      x=class,
+      y=drv
+    )
+  )
+```
+
+#3.3 Aesthetic mappings
+
+```{r}
+ggplot(data=mpg)+
+  geom_point(mapping=aes(
+    x=displ,
+    y=hwy,
+    color=class
+  ))
+```
+
+##3.3.1 Exercise
+1. What’s gone wrong with this code? Why are the points not blue?
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
+```
+因為這是透過手動，不包含變數的變動，就要放在aesthetic之外。
+
+2. Which variables in `mpg`are categorical? Which variables are continuous? (Hint: type`?mpg`to read the documentation for the dataset). How can you see this information when you run`mpg`?
+```{r}
+names(mpg)
+class(mpg$manufacturer)
+class(mpg$displ)
+```
+3. Map a continuous variable to`color`,`size`, and`shape`. How do these aesthetics behave differently for categorical vs.continuous variables?
+```{r}
+ggplot(data=mpg)+
+  geom_point(mapping=aes(
+    x=manufacturer,
+    y=displ,
+    color=model
+  ))
+```
+```{r}
+ggplot(data=mpg)+
+  geom_point(mapping=aes(
+    x=manufacturer,
+    y=displ,
+    color=cty
+  ))
+```
+4. What happens if you map the same variable to multiple aesthetics?
+```{r}
+ggplot(data=mpg)+
+  geom_point(mapping=aes(
+    x=displ,
+    y=displ,
+    color=displ
+  ))
+```
+5. What does the`stroke`aesthetic do? What shapes does it work with? (Hint: use`?geom_point`)
+```{r}
+ggplot(data=mpg)+
+  geom_point(mapping=aes(
+    x=displ,
+    y=hwy
+  ),
+  color="blue",
+  size=3,
+  stroke=1)
+```
+6. What happens if you map an aesthetic to something other than a variable name, like`aes(colour = displ < 5)`? Note, you’ll also need to specify x and y.
+```{r}
+ggplot(mpg)+
+  geom_point(mapping=aes(
+    x=displ,
+    y=hwy,
+    color=displ<5
+  ))
+```
+
+#3.5 Facets
+刻面：可以呈現多個不同的圖
+```{r}
+ggplot(mpg)+
+  geom_point(mapping=aes(
+  x=displ,
+  y=hwy
+  ))+
+  facet_wrap(~manufacturer)
+```
+```{r}
+ggplot(mpg)+
+  geom_point(mapping=aes(
+  x=displ,
+  y=hwy
+  ))+
+  facet_wrap(drv~cyl)
+```
+
+##3.5.1 Exercise
+1. What happens if you facet on a continuous variable?
+```{r}
+ggplot(mpg)+
+  geom_point(mapping=aes(
+    x=displ,
+    y=cty
+  ))+
+  facet_wrap(~hwy)
+```
+
+2. What do the empty cells in plot with `facet_grid(drv ~ cyl)`mean? How do they relate to this plot?
+```{r}
+ggplot(mpg)+
+  geom_point(mapping=aes(
+    x=displ,
+    y=hwy
+  ))+
+  facet_grid(drv~cyl)
+```
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = drv, y = cyl))
+```
+
+3. What plots does the following code make? What does . do?
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(drv ~ .)
+
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(. ~ cyl)
+```
+簡單來說就是.的那邊沒東西，看你要用值得還是橫的
+
+4. Take the first faceted plot in this section:
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class, nrow = 2)
+```
+What are the advantages to using faceting instead of the colour aesthetic? What are the disadvantages? How might the balance change if you had a larger dataset?
+
+可以更清晰看到不同面相下的差異，但就比較無法進行比較。
+
+5. Read ?facet_wrap. What does nrow do? What does ncol do? What other options control the layout of the individual panels? Why doesn’t facet_grid() have nrow and ncol arguments?
+
+ans. /Number of rows and columns.
+
+
+6. When using facet_grid() you should usually put the variable with more unique levels in the columns. Why?
+因為通常圖片是橫的，用欄可以裝比較多。
+
+
+#3.6 Geometric objects 幾何物件
+
+```{r}
+ggplot(data = mpg, mapping=aes(x=displ, y=hwy)) +
+  geom_smooth()+
+  geom_point(mapping=aes(color=class))
+```
+```{r}
+ggplot(data=mpg, mapping=aes(x=displ, y=hwy))+
+  geom_point(mapping=aes(color=class))+
+  geom_smooth(data=filter(mpg,class=="subcompact"),se=FALSE)
+```
+##3.6.1 Exercise
+1. What geom would you use to draw a line chart? A boxplot? A histogram? An area chart?
+`line chart`
+```{r}
+ggplot(mpg, mapping=aes(x=displ,y=hwy))+
+  geom_line()
+```
+`boxplot chart`
+```{r}
+ggplot(mpg, mapping=aes(x=class,y=hwy))+
+  geom_boxplot()
+```
+`histogram chart`
+```{r}
+ggplot(mpg, mapping=aes(x=displ,y=hwy))+
+  geom_col()
+```
+`area chart`
+```{r}
+ggplot(mpg, mapping=aes(x=displ,y=hwy))+
+  geom_area()
+```
+
+2. Run this code in your head and predict what the output will look like. Then, run the code in R and check your predictions.
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE)
+```
+
+3. What does show.legend = FALSE do? What happens if you remove it? Why do you think I used it earlier in the chapter?
+應該就是把圖例弄不見
+```{r}
+ggplot(data = mpg) +
+  geom_smooth(
+    mapping = aes(x = displ, y = hwy, color = drv),
+    show.legend = FALSE
+  )
+```
+4. What does the se argument to geom_smooth() do?
+se: standard error
+原本geom_smooth會有一層淡淡的are在下面，加上se後就能把他去掉
+```{r}
+ggplot(data = mpg) +
+  geom_smooth(
+    mapping = aes(x = displ, y = hwy),
+    se=FALSE)
+```
+5. Will these two graphs look different? Why/why not?
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point() + 
+  geom_smooth()
+
+ggplot() + 
+  geom_point(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_smooth(data = mpg, mapping = aes(x = displ, y = hwy))
+```
+都一樣，寫在前面可以全部通用。
+
+6. Recreate the R code necessary to generate the following graphs.
+```{r}
+ggplot(data=mpg,mapping=aes(x=displ,y=hwy))+
+  geom_point()+
+  geom_smooth(se=FALSE)
+
+ggplot(data=mpg,mapping=aes(x=displ,y=hwy))+
+  geom_point()+
+  geom_smooth(mapping=aes(group=drv),se=FALSE)
+```
+```{r}
+ggplot(data=mpg,mapping=aes(x=displ,y=hwy,color=drv))+
+  geom_point()+
+  geom_smooth(se=FALSE)
+
+ggplot(data=mpg,mapping=aes(x=displ,y=hwy))+
+  geom_point(mapping=aes(color=drv))+
+  geom_smooth(se=FALSE)
+```
+```{r}
+ggplot(data=mpg,mapping=aes(x=displ,y=hwy))+
+  geom_point(mapping=aes(color=drv))+
+  geom_smooth(mapping=aes(linetype=drv),se=FALSE)
+```
+```{r}
+ggplot(data=mpg)+
+  geom_point(mapping=aes(x=displ,y=hwy),color="gray",size=2.8)+
+  geom_point(mapping=aes(x=displ,y=hwy,color=drv))
+```
+
+#3.7 Statistical Transformations 統計轉換
+```{r}
+View(diamonds)
+```
+About this data set:
+contains information about ~54,000 diamonds, including the `price`, `carat`, `color`, `clarity`, and `cut` of each diamond. 
+```{r}
+ggplot(diamonds)+
+  geom_bar(
+    mapping=aes(x=cut)
+  )
+```
+1. 覆蓋默認的stat
+```{r}
+demo <- tribble(
+  ~cut,         ~freq,
+  "Fair",       1610,
+  "Good",       4906,
+  "Very Good",  12082,
+  "Premium",    13791,
+  "Ideal",      21551
+)
+
+ggplot(demo)+
+  geom_bar(mapping = aes(x=cut))
+
+ggplot(demo)+
+  geom_bar(mapping = aes(x=cut,y=freq),stat="identity")
+```
+```{r}
+ggplot(diamonds)+
+  geom_bar(mapping = aes(x=cut,y=stat(prop),group=1))
+```
+```{r}
+ggplot(diamonds)+
+  stat_summary(
+    mapping = aes(x=cut,y=depth),
+    fun.min = min,
+    fun.max = max,
+    fun = median
+  )
+```
+
+##3.7.1 Exercise
+1. What is the default geom associated with stat_summary()? How could you rewrite the previous plot to use that geom function instead of the stat function?
+
+2. What does geom_col() do? How is it different to geom_bar()?
+col的default stat 是 identity；而bar的是count。
+```{r}
+ggplot(diamonds)+
+  geom_col(mapping=aes(x=cut,y=depth))
+```
+3. Most geoms and stats come in pairs that are almost always used in concert. Read through the documentation and make a list of all the pairs. What do they have in common?
+`geom_bar()`:stat_count()
+`geom_boxplot()`:stat_boxplot()
+`geom_smooth()`:stat_smooth()
+`geom_density()`:stat_density()
+`geom_bin_2d()`:stat_bin_2d()
+`geom_contour()`:stat_contour()
+`geom_count()`:stat_sum()
+`geom_function()`:stat_function()
+`geom_qq_line()`:stat_qq_line()
+其實名字幾乎都一樣
+
+4. What variables does stat_smooth() compute? What parameters control its behaviour?
+
+
+5. In our proportion bar chart, we need to set group = 1. Why? In other words what is the problem with these two graphs?
+因為geom_bar的default是用x項分group，而y軸用%時，也會一起分項計算，所以要將group統一一起計算才會有我們想要的。
+```{r}
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, y = after_stat(prop),group=1))
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = color, y = after_stat(prop)))
+```
+
+#3.8 Position adjustments
+
+```{r}
+ggplot(diamonds)+
+  geom_bar(mapping=aes(x=cut,fill=clarity))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

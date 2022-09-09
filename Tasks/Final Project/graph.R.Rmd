@@ -1,0 +1,529 @@
+---
+title: "Final Project"
+author: "julia"
+date: "2022/5/24"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(lubridate)
+library(ggplot2)
+library(stringr)
+```
+
+# Final Project 主題
+大主題環繞在能源上，想問的問題是，台灣的能源政策和國際之間究竟差異在哪?
+1. 各國的能源供需與經濟成長
+2. 各國的能源依賴與經濟成長
+3. 各國的再生能源政策狀態
+4. 台灣的能源依賴現況
+
+"https://www.iea.org/data-and-statistics/data-browser?country=TAIPEI&fuel=Energy%20supply&indicator=TESbySource" 這邊是iea的各國能源供給(依source分類)
+
+
+
+# 圖一資料、簡介
+
+圖一進度：
+目前基本架構ok，但右軸定位怪怪的
+且需要調整顏色、text、圖例及標題
+
+```{r}
+#引入資料~
+##用INSERT EXCEL導進GITHUB的DATA，這樣老師比較方便~
+
+finalProj <- list()
+finalProj$BureauEnergy$source <- "https://www.moeaboe.gov.tw/ECW/populace/content/SubMenu.aspx?menu_id=3010"
+
+#台灣能源總消費量
+##單位：公秉油當量kloe, kiloliter of oil equivalent
+url <- "https://github.com/hereisjulia/R_Visualization/blob/main/Tasks/Final%20Project/DomesticEnergyConsumption.xlsx?raw=true"
+destfile <- "DomesticEnergyConsumption.xlsx"
+curl::curl_download(url, destfile)
+finalProj$BureauEnergy$data$Dom_Energy_Consumption <- read_excel(destfile, skip = 1)
+
+#台灣進口能源比例
+##單位：公秉油當量
+url <- "https://github.com/hereisjulia/R_Visualization/blob/main/Tasks/Final%20Project/ImpEnergySource.xlsx?raw=true"
+destfile <- "ImpEnergySource.xlsx"
+curl::curl_download(url, destfile)
+finalProj$BureauEnergy$data$Imp_EnergySource<- read_excel(destfile, skip = 1)
+
+#台灣對進口能源依賴比率
+url <- "https://github.com/hereisjulia/R_Visualization/blob/main/Tasks/Final%20Project/Import_Reliance.xlsx?raw=true"
+destfile <- "Import_Reliance.xlsx"
+curl::curl_download(url, destfile)
+finalProj$BureauEnergy$data$Imp_EnergyRelience <- read_excel(destfile, skip = 1)
+```
+# 圖一
+/內容包含：台灣能源總量+進口量+依賴進口量
+/data格式：2019年1月到2022年3月的月資料
+/aes 設計：呈現總能源量>凸顯對進口能源依賴>顯示進口能源類別
+---用area+線圖呈現
+
+## DataTidying
+
+### Data1: 台灣能源總量
+但現在我們的資料形式是wide form, 先把它改成long.
+```{r}
+pivot_longer(
+  finalProj$BureauEnergy$data$Dom_Energy_Consumption,
+  cols = -c(1),
+  names_to = "month",
+  values_to = "Consump_kloe"
+) -> finalProj$BureauEnergy$data$Dom_Energy_Consumption
+```
+
+現在一個問題是等等要畫圖時的x軸，我想要用時間的格式，所以要把資料改成時間。so, 這邊做法：
+/因為date最小單位必須要是日期，所以要把日期加一下
+/接下來就可以直接用lubridate轉資料類別了~
+
+```{r}
+paste(finalProj$BureauEnergy$data$Dom_Energy_Consumption$month, "-01") -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$month
+lubridate::ymd(finalProj$BureauEnergy$data$Dom_Energy_Consumption$month) -> finalProj$BureauEnergy$data$Dom_Energy_Consumption$month
+```
+
+### Data2: 進口量
+```{r}
+pivot_longer(
+  finalProj$BureauEnergy$data$Imp_EnergySource,
+  cols = -c(1),
+  names_to = "month",
+  values_to = "Import_kloe"
+) -> finalProj$BureauEnergy$data$Imp_EnergySource
+```
+```{r}
+#轉date
+paste(finalProj$BureauEnergy$data$Imp_EnergySource$month, "-01") -> finalProj$BureauEnergy$data$Imp_EnergySource$month
+lubridate::ymd(finalProj$BureauEnergy$data$Imp_EnergySource$month) -> finalProj$BureauEnergy$data$Imp_EnergySource$month
+```
+
+### Data3: 進口能源依賴
+```{r}
+pivot_longer(
+  finalProj$BureauEnergy$data$Imp_EnergyRelience,
+  cols = -c(1),
+  names_to = "month",
+  values_to = "relience"
+) -> finalProj$BureauEnergy$data$Imp_EnergyRelience
+```
+```{r}
+#轉date
+paste(finalProj$BureauEnergy$data$Imp_EnergyRelience$month, "-01") -> finalProj$BureauEnergy$data$Imp_EnergyRelience$month
+lubridate::ymd(finalProj$BureauEnergy$data$Imp_EnergyRelience$month) -> finalProj$BureauEnergy$data$Imp_EnergyRelience$month
+```
+
+
+## ggplot start
+總之現在就開始畫圖~從area兩張+一張線圖開始！
+```{r}
+#先確定一下資料格式正確：month是date，consump是numeric
+finalProj$BureauEnergy$data$Dom_Energy_Consumption$month|>class()
+finalProj$BureauEnergy$data$Dom_Energy_Consumption$Consump_kloe |>class()
+```
+
+## 雙軸
+```{r}
+finalProj$plot1 <- list()
+finalProj$plot1$Imp_EnergyRelience <- function(){
+  geom_line(
+    data = finalProj$BureauEnergy$data$Imp_EnergyRelience,
+    mapping = aes(
+      x= month,
+      y= transferInv_leftbreaks(relience)
+    ),
+    size=1,
+    color="#272727"
+  )
+}
+```
+
+
+```{r}
+#調整右軸的位置
+transfer_leftBreaks = function(breaks){
+      scales::rescale(breaks, 
+        from=c(0,14000), to=c(90,100))
+}
+#調整要放在右軸的資料
+transferInv_leftbreaks = function(breaks){
+  scales::rescale(breaks,
+        to=c(0,14000), from=c(90,100))
+}
+
+
+finalProj$plot1$scale_y_area <- function(...){
+  scale_y_continuous(
+    name="進口能源種類",
+    limits = c(0, 14000),
+    breaks = seq(0, 14000, by=2000),
+    labels = seq(0, 14000, by=2000),
+    sec.axis = sec_axis(name = "進口能源依賴率",
+                        trans = transfer_leftBreaks,
+                        breaks = (seq(90,100, by=2)))
+  )
+}
+```
+
+```{r}
+names(finalProj$BureauEnergy$data$Imp_EnergySource)[[1]] <- "Source"
+levels(finalProj$BureauEnergy$data$Imp_EnergySource$Source)
+a <- data.frame(
+  Source="能源依賴比例",
+  month="2019-01-01",
+  Import_kloe=0
+)
+rbind(finalProj$BureauEnergy$data$Imp_EnergySource,a) ->finalProj$BureauEnergy$data$Imp_EnergySource
+finalProj$BureauEnergy$data$Imp_EnergySource$Source<- factor(finalProj$BureauEnergy$data$Imp_EnergySource$Source, levels=c("能源依賴比例","生質能及廢棄物", "核能", "天然氣", "煤及煤產品","原油及石油產品"))
+```
+
+```{r}
+areaColor= c("#CE2029","#E0E0E0","#D0D0D0","#BEBEBE","#6C6C6C", "#4F4F4F")
+
+p <- ggplot()+
+geom_area(
+    data = finalProj$BureauEnergy$data$Imp_EnergySource,
+    mapping = aes(
+      x=month,
+      y=Import_kloe/1000,
+      fill= Source
+    ),
+    position= "stack"
+  )+
+  scale_fill_manual(
+    name = "",
+    values = areaColor    
+  )+
+  geom_line(
+    data = finalProj$BureauEnergy$data$Imp_EnergyRelience,
+    mapping = aes(
+      x= month,
+      y= transferInv_leftbreaks(relience)
+    ),
+    size=1,
+    color="#CE2029"
+  )+
+  finalProj$plot1$scale_y_area()+
+  labs(
+    x="年度",
+    y="進口量",
+    title="台灣進口能源依賴",
+    subtitle="單位: 千公秉油當量",
+    caption="資料來源: 經濟部能源局"
+  )
+
+```
+
+存圖
+```{r}
+
+graph1file=file.path(getwd(), "graph1.Rds")
+saveRDS(p, graph1file)
+graph1
+```
+
+
+# 圖二資料、簡介
+目前考慮，比較國內外對再生能源的使用程度。
+"https://www.iea.org/data-and-statistics/data-browser/?country=WORLD&fuel=Renewables%20and%20waste&indicator=SDG72" 這是renewable對總能源用量的占比，還有風和太陽能發電的量
+
+line graph呈現各個國家renewable能源占總能源用量的比例
+
+```{r}
+finalProj$IEA$source <- "https://www.iea.org/data-and-statistics/data-browser?country=TAIPEI&fuel=Renewables%20and%20waste&indicator=SDG72"
+ReNew_World <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20share%20in%20final%20energy%20consumption%20(SDG%207.2)%20%20-%20World.csv", skip = 3)
+Renew_Taiwan <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20share%20in%20final%20energy%20consumption%20(SDG%207.2)%20%20-%20Chinese%20Taipei.csv", skip = 3)
+ReNew_EU <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20share%20in%20final%20energy%20consumption%20(SDG%207.2)%20%20-%20European%20Union%20-%2028.csv",skip=3)
+ReNew_USA <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20share%20in%20final%20energy%20consumption%20(SDG%207.2)%20%20-%20United%20States.csv", skip = 3)
+ReNew_China <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20share%20in%20final%20energy%20consumption%20(SDG%207.2)%20%20-%20China%20(People's%20Republic%20of%20China%20and%20Hong%20Kong%20China).csv", skip=3)
+```
+
+這邊做一個簡單的quickMerge function， 因為我的data set都一個個國家的所以加速合併。
+```{r}
+quickMerge <- function(df1, df2){
+  names(df1)[[1]] <- "Year"
+  names(df2)[[1]] <- "Year"
+  a <- merge(x=df1, y=df2, by= "Year")
+  select(a, -contains("Units"))
+}
+a <- quickMerge(ReNew_World,Renew_Taiwan)
+a <- quickMerge(a, ReNew_EU)
+names(a) <- c("Year", "World", "Taiwan", "EU")
+a <- quickMerge(a, ReNew_USA)
+a <- quickMerge(a, ReNew_China)
+names(a) <- c("Year", "World", "Taiwan", "EU", "USA","China")
+finalProj$IEA$data$ReNew_EnCon <-a
+```
+```{r}
+pivot_longer(
+  finalProj$IEA$data$ReNew_EnCon,
+  cols = -c(1),
+  names_to = "Country",
+  values_to = "Renewable share"
+) -> finalProj$IEA$data$ReNew_EnCon
+```
+
+# 圖二
+
+調整順序&顏色
+```{r}
+#reorder
+finalProj$IEA$data$ReNew_EnCon$Country |> as.factor() -> finalProj$IEA$data$ReNew_EnCon$Country
+finalProj$IEA$data$ReNew_EnCon$Country |> levels()
+finalProj$IEA$data$ReNew_EnCon$Country |> ordered(levels=c("World", "Taiwan", "EU", "USA", "China")) -> finalProj$IEA$data$ReNew_EnCon$Country
+finalProj$IEA$data$ReNew_EnCon$Country |> levels()
+
+#color
+lineColor= c("black", "#CE2029", "#E0E0E0","#D0D0D0", "#BEBEBE")
+colorAdj <- function(lineColor){
+  scale_color_manual(
+    values = lineColor
+  )
+}
+```
+
+畫圖
+```{r}
+view(finalProj$IEA$data$ReNew_EnCon)
+p <- ggplot()+
+  geom_line(
+    data = finalProj$IEA$data$ReNew_EnCon,
+    mapping = aes(
+      x=Year,
+      y=`Renewable share`,
+      group = Country,
+      color = Country
+      ),
+    size =1
+  )+
+  scale_x_continuous(
+    breaks= c(2019, seq(1990, 2019, by=5)),
+    labels = c(2019, seq(1990, 2019, by=5))
+  )+
+  scale_y_continuous(
+    breaks = c(2.02, 4.17, 6.07, 16.07, 33.6, seq(0,35,by=10)),
+    labels = c(2.02, 4.17, 6.07, 16.07, 33.6, seq(0,35,by=10))
+  )+
+  geom_text(
+    mapping = aes(
+      x = c(2020.5,2020.5,2020,2020.5,2020.5),
+      y = c(3,17.2, 18.7, 10.42, 14.4),
+      label = c("Taiwan,2.95%","World,17.7%", "EU,18.2%", "USA,10.4%", "China,14.4%")
+    ),
+    color = c("#CE2029","black","#E0E0E0","#D0D0D0", "#BEBEBE"),
+    size = 3
+  )+
+  colorAdj(lineColor)+
+  labs(
+    x= "年度",
+    y= "再生能源佔總能源消耗",
+    title= "台灣再生能源使用比例",
+    subtitle= "單位: %",
+    caption= "資料來源: IEA"
+  )+
+  theme(text=element_text(size = 10))+
+  theme(legend.position="none")
+p
+```
+
+存圖
+```{r}
+graph2file=file.path(getwd(), "graph2.Rds")
+saveRDS(p, graph2file)
+graph2
+```
+
+#圖三資料、簡介
+想要畫一個呈現台灣2021年度發電來源的雙層圓餅圖
+內層分成抽蓄水力、火力、核能、再生能源
+外層則分成台電、民營電廠、自用發電設備
+```{r}
+url <- "https://github.com/hereisjulia/R_Visualization/blob/main/Tasks/Final%20Project/%E7%99%BC%E9%9B%BB%E9%87%8F_report.xlsx?raw=true"
+destfile <- "Electricity_prod.xlsx"
+curl::curl_download(url, destfile)
+finalProj$BureauEnergy$data3$Electricity_prod <- read_excel(destfile, 
+    skip = 1)
+
+names(finalProj$BureauEnergy$data3$Electricity_prod) <- c("發電種類","2020","2021","2022","來源")
+pivot_longer(
+  data=finalProj$BureauEnergy$data3$Electricity_prod,
+  cols=c(2:4),
+  names_to = "年度",
+  values_to = "發電量"
+)->finalProj$BureauEnergy$data3$Electricity_prod
+
+finalProj$BureauEnergy$data3$Electricity_prod |> arrange(desc(發電種類)) |> filter(年度==c("2021")) -> a
+a[c(1:12),c(1:4)] |> filter(發電量>0) -> finalProj$BureauEnergy$data3$Electricity_prod
+finalProj$BureauEnergy$data3$Electricity_prod  |> view()
+finalProj$BureauEnergy$data3$Electricity_prod$發電量|> as.numeric() -> finalProj$BureauEnergy$data3$Electricity_prod$發電量
+finalProj$BureauEnergy$data3$Electricity_prod |> arrange(發電種類) -> finalProj$BureauEnergy$data3$Electricity_prod
+
+finalProj$BureauEnergy$data3$Electricity_prod |> group_by(發電種類)|> mutate(各類發電量=sum(發電量)) |> distinct(各類發電量, .keep_all = TRUE) |> select(-發電量) -> finalProj$BureauEnergy$data3$Electricity_sum
+names(finalProj$BureauEnergy$data3$Electricity_sum)[[4]] <- "發電量"
+finalProj$BureauEnergy$data3$Electricity_sum|>view()
+```
+
+#圖三
+參考:"https://community.rstudio.com/t/how-to-create-a-ggplot2-pie-and-donut-chart-on-same-plot/42798/3"
+```{r}
+labels <- data.frame(
+  source = c("台電","台電","台電","民營電廠", "自用發電設備","台電","民營電廠", "自用發電設備"),
+  generation = c(27787947580,3184025000,4589313306,2713498811,10125514849,161116154667,44561609987,36857983270),
+  stringsAsFactors = FALSE)
+
+labels |> mutate(Total=sum(generation)) |> mutate(CUM=cumsum(generation)) |> mutate(Bottom=CUM-generation) |> mutate(Mid=(CUM+Bottom)/2)->labels
+view(labels)
+```
+
+
+
+```{r}
+barColor=c("#8E4A49","#C5C392","#587792","#8D7471")
+barColor2=c("#8E4A49","#8E4A49","#8E4A49","#C5C392","#C5C392","#C5C392","#587792","#8D7471")
+
+p <- ggplot()+
+  geom_col(
+    data=finalProj$BureauEnergy$data3$Electricity_sum,
+    mapping=aes(
+      x=2,
+      y=發電量,
+      fill=發電種類
+    ),
+    position="stack",
+    color="black"
+  )+
+  scale_fill_manual(
+    name = "發電方式",
+    values =barColor,
+    labels = finalProj$BureauEnergy$data3$Electricity_sum$發電種類
+  )+
+  geom_col(
+    data=finalProj$BureauEnergy$data3$Electricity_prod,
+    mapping=aes(
+      x=3,
+      y=發電量,
+      group=發電種類
+    ),
+    position="stack",
+    color="black",
+    fill=barColor2
+  )+
+  geom_label(
+    data=labels,
+    mapping=aes(label = source, x= 3, y = Mid),
+    size = 2.2,
+    position="identity"
+  )+
+  xlim(0, 3.5)+
+  labs(title = "台灣發電來源",
+       caption = "資料來源: 經濟部能源局",
+       ) + 
+  theme_void()+
+  coord_polar(theta = "y")
+  )
+```
+
+```{r}
+graph3file=file.path(getwd(), "graph3.Rds")
+saveRDS(p, graph3file)
+graph3
+```
+
+
+
+# 廢棄圖三資料、簡介
+data: https://www.iea.org/data-and-statistics/data-browser?country=TAIPEI&fuel=Renewables%20and%20waste&indicator=RenewGenBySource
+
+
+# 廢棄圖三
+
+```{r}
+finalProj$IEA$source2 <- "https://www.iea.org/data-and-statistics/data-browser?country=USA&fuel=Renewables%20and%20waste&indicator=RenewGenBySource"
+
+EU_RNbySource <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20electricity%20generation%20by%20source%20(non-combustible)%20-%20OECD%20Europe.csv", skip=3)
+
+China_RNbySource <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20electricity%20generation%20by%20source%20(non-combustible)%20-%20People's%20Republic%20of%20China.csv", skip=3)
+
+USA_RNbySource <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20electricity%20generation%20by%20source%20(non-combustible)%20-%20United%20States.csv", skip =3)
+
+Taiwan_RNbySource <- read_csv("https://raw.githubusercontent.com/hereisjulia/R_Visualization/main/Tasks/Final%20Project/Renewable%20electricity%20generation%20by%20source%20(non-combustible)%20-%20Chinese%20Taipei.csv", skip=3)
+
+view(China_RNbySource)
+
+
+Taiwan_RNbySource |> select(-contains("Units")) -> Taiwan_RNbySource
+EU_RNbySource |> select(-contains("Units")) -> EU_RNbySource
+USA_RNbySource |> select(-contains("Units")) -> USA_RNbySource
+China_RNbySource |> select(-contains("Units")) -> China_RNbySource
+
+pivot_longer(
+  Taiwan_RNbySource,
+  cols=-c(1),
+  names_to = "RenwableSource",
+  values_to = "GWh"
+)-> Taiwan_RNbySource
+Taiwan_RNbySource |> mutate(Country="Taiwan") -> Taiwan_RNbySource
+
+pivot_longer(
+  EU_RNbySource,
+  cols=-c(1),
+  names_to = "RenwableSource",
+  values_to = "GWh"
+)-> EU_RNbySource
+EU_RNbySource |> mutate(Country="EU") -> EU_RNbySource
+
+pivot_longer(
+  USA_RNbySource,
+  cols=-c(1),
+  names_to = "RenwableSource",
+  values_to = "GWh"
+)-> USA_RNbySource
+USA_RNbySource |> mutate(Country="USA") -> USA_RNbySource
+
+pivot_longer(
+  China_RNbySource,
+  cols=-c(1),
+  names_to = "RenwableSource",
+  values_to = "GWh"
+)-> China_RNbySource
+China_RNbySource |> mutate(Country="China") -> China_RNbySource
+
+A <- rbind(Taiwan_RNbySource, EU_RNbySource, USA_RNbySource, China_RNbySource)
+names(A)[[1]] <- "Year"
+
+finalProj$IEA$data2$RenewableSources <- filter(A, Year==2020)
+view(finalProj$IEA$data2$RenewableSources)
+```
+
+
+```{r}
+finalProj$IEA$data2$RenewableSources$RenwableSource|>as.factor()
+levels(finalProj$IEA$data2$RenewableSources$RenwableSource)
+finalProj$IEA$data2$RenewableSources$RenwableSource <- factor(finalProj$IEA$data2$RenewableSources$RenwableSource, levels=c("Hydro","Wind","Solar PV","Geothermal","Solar thermal","Tide, wave, ocean"))
+```
+
+```{r}
+#用col好像不太對，看不出差異，可能要用圓餅??
+ggplot()+
+  geom_bar(
+    data=finalProj$IEA$data2$RenewableSources,
+    mapping=aes(x=Country,y=GWh, fill=RenwableSource),
+    stat = "identity", width=1, color="white"
+    )+
+  coord_polar()+
+  theme_void()
+```
+
+
+
+
+
+
+
+
+
+
+
+
