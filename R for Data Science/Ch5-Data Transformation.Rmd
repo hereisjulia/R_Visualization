@@ -1,0 +1,9 @@
+---
+title: 'Ch5 Data Transformation'
+author: "julia"
+date: "2022/10/17"
+output: html_document
+---
+
+編程基礎：
+把R當成計算機使用!

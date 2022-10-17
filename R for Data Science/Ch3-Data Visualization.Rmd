@@ -346,6 +346,9 @@ ggplot(diamonds)+
   geom_bar(
     mapping=aes(x=cut)
   )
+#基本上可以與對應stat互換：
+ggplot(diamonds)+
+  stat_count(mapping=aes(x=cut))
 ```
 1. 覆蓋默認的stat
 ```{r}
@@ -363,6 +366,7 @@ ggplot(demo)+
 
 ggplot(demo)+
   geom_bar(mapping = aes(x=cut,y=freq),stat="identity")
+#原本只會計算個數(只有x)，更改stat後變成x,y變數
 ```
 ```{r}
 ggplot(diamonds)+
@@ -380,6 +384,7 @@ ggplot(diamonds)+
 
 ##3.7.1 Exercise
 1. What is the default geom associated with stat_summary()? How could you rewrite the previous plot to use that geom function instead of the stat function?
+geom = `"pointrange"`
 
 2. What does geom_col() do? How is it different to geom_bar()?
 col的default stat 是 identity；而bar的是count。
@@ -530,10 +535,15 @@ ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
   coord_fixed()
 ```
 
+#3.10 The Layered Grammer of Graphics
+先做一個簡單的製圖順序
 
-
-
-
+1. 觀察資料
+```{r}
+view(diamonds)
+ggplot()+stat_count(diamonds, mapping=aes(x=cut,fill=cut))
+```
+2. 
 
 
 
