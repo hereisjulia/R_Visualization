@@ -5,5 +5,108 @@ date: "2022/10/17"
 output: html_document
 ---
 
-編程基礎：
-把R當成計算機使用!
+使用dplyr進行資料變換
+本章會運用到來自nycflights13資料及進行dplyr練習
+```{r}
+library(nycflights13)
+library(tidyverse)
+```
+
+```{r}
+view(nycflights13::flights)
+flights
+```
+*?flights*
+columns:
+`year, month, day`
+`Date of departure.`
+`dep_time, arr_time`
+`sched_dep_time, sched_arr_time`
+`dep_delay, arr_delay`: in minutes
+`carrier`
+`flight`: Flight number.
+`tailnum`: Plane tail number.
+`origin, dest`: Origin and destination.
+`air_time`: Amount of time spent in the air, in minutes.
+`distance`: Distance between airports, in miles.
+`hour, minute`: Time of scheduled departure broken into hour and minutes.
+`time_hour`: Scheduled date and hour of the flight as a POSIXct date. Along with origin, can be used to join flights data to weather data.
+
+*每個欄位名稱下面都有三或四個字母縮寫，他們描述每個變數的類型：*
+- int - 整數integers
+- dbl - doubles雙精度浮點數或實數real numbers
+- chr - 字元向量character vectors或字串strings
+- dttm - 日期與時間
+- lgl - 邏輯向量logical vectors，只有true/false
+- fctr - 因子factors，R以固定幾個可能值來表示類別變數(categorical variables)的一種資料結構
+
+#5.1 dplyr Basics
+
+*dplyr五個基礎函式*
+- filter(): 依據觀察的值進行挑選(列)
+- arrange(): 重新安排資料列的順序
+- select(): 以名稱挑選變數(欄)
+- mutate(): 以既有變數的函式運算值建立新的變數
+- summarize(): 從許多值產生單一的摘要資訊
+這些函式的共通點是動詞的運作方式：
+1. 第一個引數(argument)是一個資料框(data frame)
+2. 後面的引述用不帶引號的變數名稱描述要對資料框做的事情
+3. 結果會是一個新的資料框
+
+group_by()可以搭配以上使用。
+
+#5.2 filter()
+*filter(data, column1 == 1, column2 == 2)*
+
+```{r}
+Sep23 <- filter(flights, month==9, day==23)
+Sep23
+```
+##Boolean布林運算
+這邊蠻必要的，之後邊看邊練習。
+##缺失值NA
+check if it's NA:
+```{R}
+is.na(flights$year)
+#都是false,表示都非na
+```
+filter只會留下條件符合的值，其他不符合的(false)和NA都會被刪掉，所以要留下NA要明確要求：
+```{R}
+df <- tibble(x=c(1,NA,3))
+filter(df,x>1)
+filter(df,is.na(x)|x>1)
+```
+##Exercise
+1. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
