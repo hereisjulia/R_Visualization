@@ -77,12 +77,19 @@ filter(df,x>1)
 filter(df,is.na(x)|x>1)
 ```
 ##Exercise
-1. 
+1. 找出符合下列條件的所有班機:
+抵達杜點超過兩小時
+飛往houston(iah或hou)
+屬於United,American或Delta航空公司
+在夏天(7-9月)出發
+晚了兩小時以上抵達但沒有晚出發
+
+
+```{r}
 
 
 
-
-
+```
 
 
 
