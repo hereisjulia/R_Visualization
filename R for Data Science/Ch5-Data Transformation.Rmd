@@ -78,18 +78,34 @@ filter(df,is.na(x)|x>1)
 ```
 ##Exercise
 1. 找出符合下列條件的所有班機:
-抵達杜點超過兩小時
-飛往houston(iah或hou)
-屬於United,American或Delta航空公司
-在夏天(7-9月)出發
-晚了兩小時以上抵達但沒有晚出發
+a. 抵達誤點超過兩小時
+```{r}
+filter(flights, arr_delay>=120)
+```
+b. 飛往houston(iah或hou)
+```{r}
+filter(flights, dest=="IAH"|dest=="HOU")
+filter(flights, dest%in%c("IAH","HOU"))
+```
+c. 屬於United,American或Delta航空公司
+```{R}
+filter(flights, carrier%in%c("UA","AA","DL"))
+```
+d. 在夏天(7-9月)出發
+```{r}
+filter(flights,month%in%c(7,8,9))
+```
 
-
+e. 晚了兩小時以上抵達但沒有晚出發
+```{r}
+filter(flights, arr_delay>=120&dep_delay<=0)
+```
+f. 誤點至少一小時，但在飛行時以補超過30分鐘時間
 ```{r}
 
-
-
 ```
+g. 在子夜(midnight)和6am之間出發
+
 
 
 
