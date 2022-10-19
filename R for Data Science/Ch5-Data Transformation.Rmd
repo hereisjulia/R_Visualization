@@ -94,20 +94,24 @@ filter(flights, carrier%in%c("UA","AA","DL"))
 d. 在夏天(7-9月)出發
 ```{r}
 filter(flights,month%in%c(7,8,9))
+filter(flights,month%in%7:9)
 ```
 
 e. 晚了兩小時以上抵達但沒有晚出發
 ```{r}
 filter(flights, arr_delay>=120&dep_delay<=0)
+filter(flights, arr_delay>=120, dep_delay<=0)
 ```
 f. 誤點至少一小時，但在飛行時以補超過30分鐘時間
 ```{r}
-
+filter(flights, dep_delay>=60, dep_delay-arr_delay>=30)
 ```
 g. 在子夜(midnight)和6am之間出發
-
-
-
+```{r}
+#filter(flights, dep_time>=0, dep_time<=600) ##錯誤
+filter(flights, dep_time==2400|dep_time<=600)
+```
+**In dep_time, midnight is represented by 2400, not 0. You can verify this by checking the minimum and maximum of dep_time.
 
 
 
