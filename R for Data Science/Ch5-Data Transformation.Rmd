@@ -113,15 +113,22 @@ filter(flights, dep_time==2400|dep_time<=600)
 ```
 **In dep_time, midnight is represented by 2400, not 0. You can verify this by checking the minimum and maximum of dep_time.
 
+2. Another useful dplyr filtering helper is between(). What does it do? Can you use it to simplify the code needed to answer the previous challenges?
+```{r}
+filter(flights,between(month,7,9))
+```
+
+3. How many flights have a missing dep_time? What other variables are missing? What might these rows represent?
+```{r}
+filter(flights,is.na(dep_time))
+#dep_delay, arr_time, arr_delay, air_time are missing
+#班機取消?
+```
+4. Why is NA ^ 0 not missing? Why is NA | TRUE not missing? Why is FALSE & NA not missing? Can you figure out the general rule? (NA * 0 is a tricky counterexample!)
+```{r}
 
 
-
-
-
-
-
-
-
+```
 
 
 
