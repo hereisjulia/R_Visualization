@@ -132,6 +132,34 @@ FALSE&NA   #NA & FALSE is FALSE because "anything and FALSE" is always FALSE
 NA*0    #Since x∗0=0 for all finite numbers we might expect NA * 0 == 0, but that’s not the case. The reason that NA * 0 != 0 is that 0*∞ and 0*−∞ are undefined. R represents undefined results as NaN, which is an abbreviation of “not a number”.
 ```
 
+#5.3 arrange()
+*arrange(data, order)*
+/arrange的用法和filter很像，但它是用來重新安排`資料列`的順序的
+
+```{r}
+arrange(flights, year, month, day)
+
+arrange(flights, desc(arr_delay))
+#desc()指"遞減順序Descending Order"
+##這邊就是以arr_delay欄從大到小排列
+```
+##Exercise
+1. 你要如何使用arrange()將所有NA排在最前面?
+```{R}
+arrange(flights, is.na(arr_delay))
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
