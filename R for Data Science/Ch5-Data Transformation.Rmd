@@ -126,8 +126,10 @@ filter(flights,is.na(dep_time))
 ```
 4. Why is NA ^ 0 not missing? Why is NA | TRUE not missing? Why is FALSE & NA not missing? Can you figure out the general rule? (NA * 0 is a tricky counterexample!)
 ```{r}
-
-
+NA^0  #all numeric values  X^0=1
+NA|TRUE   #because "anything or TRUE" is TRUE
+FALSE&NA   #NA & FALSE is FALSE because "anything and FALSE" is always FALSE
+NA*0    #Since x∗0=0 for all finite numbers we might expect NA * 0 == 0, but that’s not the case. The reason that NA * 0 != 0 is that 0*∞ and 0*−∞ are undefined. R represents undefined results as NaN, which is an abbreviation of “not a number”.
 ```
 
 
