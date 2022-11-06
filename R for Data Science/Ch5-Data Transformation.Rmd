@@ -146,8 +146,97 @@ arrange(flights, desc(arr_delay))
 ##Exercise
 1. 你要如何使用arrange()將所有NA排在最前面?
 ```{R}
-arrange(flights, is.na(arr_delay))
+arrange(flights, desc(is.na(dep_time)),dep_time)
 ```
+The flights will first be sorted by desc(is.na(dep_time)). Since desc(is.na(dep_time)) is either TRUE when dep_time is missing, or FALSE, when it is not, the rows with missing values of dep_time will come first, since TRUE > FALSE.
+
+2. 將flights排序以找出誤點最多的班機。找出最早出發的班機。
+```{r}
+arrange(flights, desc(dep_delay))
+arrange(flights, dep_delay)
+```
+
+3. 將flights排序以找出最快的航班。
+```{r}
+arrange(flights, air_time)
+#fastest flight with the highest average speed
+arrange(flights, desc(distance/air_time))
+```
+
+4. 那些航班的飛行距離最長？那些最短？
+```{r}
+arrange(flights, desc(distance))
+arrange(flights, distance)
+```
+
+#5.4 Select()
+> 正常狀況下鰻容易遇到有很多變數的資料集，所以面臨的第一個挑戰通常都是要如何篩選出需要的變數。
+
+```{r}
+select(flights, year, month, day)
+select(flights, year:day)
+select(flights,-(year:day))
+```
+其他輔助select的函式:
+starts_with("abc")  符合以abc開頭的名稱
+ends_with("xyz")  符合以xyz結尾的名稱
+contains("ijk")  符合其中有包含ijk的名稱
+num_range("x", 1:3)  符合x1, x2, 及x3
+
+matches("(.)\\1")選擇符合一個正規表達式(regular expression) 的變數。這一個符合含有重複字元的任何變數。會在ch11了解更多有關正規表達式的資訊。
+
+##改欄位名稱
+select也可以用來改變變數名稱，但因為會消除未選擇的欄位，所以有點雞肋。
+一般改名稱會用rename()
+```{r}
+rename(flights, tail_num=tailnum)
+#前面是要改成的，後面是要改掉的變數欄位
+```
+
+##Exercise
+1. 進行腦力激盪，想出盡可能多種方法從flights選擇dep_time、dep_delay、arr_time及arr_delay。
+```{r}
+select(flights, dep_time, dep_delay, arr_time, arr_delay)
+select(flights, starts_with("dep_"), starts_with("arr_"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
