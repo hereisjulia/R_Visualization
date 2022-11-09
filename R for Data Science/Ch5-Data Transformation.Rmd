@@ -225,12 +225,34 @@ select(flights, contains("TIME", ignore.case = FALSE))
 ```
 
 #5.5 Mutate()
+```{r}
+flights_sml <- select(flights, year:day, ends_with("delay"), distance, air_time)
+mutate(flights_sml,
+       gain = arr_delay-dep_delay,
+       speed = distance/air_time *60)
 
+mutate(flights_sml,
+       gain = arr_delay-dep_delay,
+       hours = air_time/60,
+       gain_per_hour = gain / hours)
 
+#若只想保留新的變數，就用transmute()
+transmute(flights_sml,
+          gain = arr_delay-dep_delay,
+          hours = air_time/60,
+          gain_per_hours = gain/hours)
+```
+##Vectorized向量化
 
+*模組運算%/%、%%
 
-
-
+整數除法和取餘數，以此為例可以用來抓出小時和分鐘:
+```{r}
+transmute(flights,
+          dep_time,
+          hour = dep_time%/%100,
+          minute = dep_time%%100)
+```
 
 
 
