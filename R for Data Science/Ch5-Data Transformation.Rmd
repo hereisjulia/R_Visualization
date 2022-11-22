@@ -253,7 +253,34 @@ transmute(flights,
           hour = dep_time%/%100,
           minute = dep_time%%100)
 ```
+## Exercise
 
+1. 目前dep_time和sched_dep_time是很方便查看，但卻很難對他們進行計算，因為他們並非真正的連續數字。請以更方便的表示法將他們轉為從子夜開始算起的分鐘數。
+```{R}
+transmute(flights,
+          depTime = dep_time%/%100*60 + dep_time%%100,
+          SchedDepTime = sched_dep_time%/%100*60 + sched_dep_time%%100)
+```
+2. 把air_time跟arr_time - dep_time做比較。你預期會看到什麼呢?你實際上又看到什麼?你要怎麼修正其中的關聯?
+```{r}
+transmute(flights, 
+          air_time = air_time,
+          count = arr_time-dep_time)
+#應該要是一樣的，但因為數字表現方式的問題，結果不相同
+transmute(flights,
+          air_time = air_time,
+          count = (arr_time%/%100-dep_time%/%100)*100 + (arr_time%%100-dep_time%%100))
+
+##未解決!!!!!!!!!!!!!!
+```
+
+3. 比較dep_time、sched_dep_time和dep_delay。你預期這三個數字之間會如何產生關聯呢?
+
+4. 使用一個排位寒士找出誤點最多的10個航班。你會怎麼處理平手的情況呢?請仔細閱讀min_rank()的說明文件。
+
+5. 1:3 + 1:10 會回傳什麼呢?
+
+6. R提供了哪些三角學函式呢?
 
 
 
